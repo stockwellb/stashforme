@@ -133,8 +133,8 @@ func (s *ListURLStore) Add(ctx context.Context, listID, urlID, notes string) (*L
 	return &lu, nil
 }
 
-// UpdateNotes updates the notes for a URL in a list
-func (s *ListURLStore) UpdateNotes(ctx context.Context, id, notes string) (*ListURL, error) {
+// Update updates the URL reference and notes for a list URL entry
+func (s *ListURLStore) Update(ctx context.Context, id, urlID, notes string) (*ListURL, error) {
 	var lu ListURL
 	var notesVal sql.NullString
 	if notes != "" {
@@ -143,17 +143,20 @@ func (s *ListURLStore) UpdateNotes(ctx context.Context, id, notes string) (*List
 
 	err := s.db.QueryRowContext(ctx, `
 		UPDATE list_urls
-		SET notes = $1
-		WHERE id = $2 AND deleted_at IS NULL
+		SET url_id = $1, notes = $2
+		WHERE id = $3 AND deleted_at IS NULL
 		RETURNING id, list_id, url_id, notes, position, created_at
-	`, notesVal, id).Scan(
+	`, urlID, notesVal, id).Scan(
 		&lu.ID, &lu.ListID, &lu.URLID, &notesVal, &lu.Position, &lu.CreatedAt,
 	)
 	if err == sql.ErrNoRows {
 		return nil, ErrListURLNotFound
 	}
 	if err != nil {
-		return nil, fmt.Errorf("failed to update notes: %w", err)
+		if isUniqueViolation(err) {
+			return nil, ErrURLAlreadyInList
+		}
+		return nil, fmt.Errorf("failed to update list url: %w", err)
 	}
 	lu.Notes = notesVal.String
 	return &lu, nil

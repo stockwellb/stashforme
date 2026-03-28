@@ -237,7 +237,7 @@ func (h *StashHandler) AddURL(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/my/stash?list=%s", list.ID))
 }
 
-// UpdateURLNotes updates the notes for a URL in a list
+// UpdateListURL updates the URL and notes for a list URL entry
 func (h *StashHandler) UpdateURLNotes(c echo.Context) error {
 	user := RequireUser(c)
 	if user == nil {
@@ -246,6 +246,7 @@ func (h *StashHandler) UpdateURLNotes(c echo.Context) error {
 
 	ctx := c.Request().Context()
 	listURLID := c.Param("id")
+	rawURL := c.FormValue("url")
 	notes := c.FormValue("notes")
 
 	// Find the list URL and verify ownership
@@ -260,11 +261,22 @@ func (h *StashHandler) UpdateURLNotes(c echo.Context) error {
 		return c.String(http.StatusNotFound, "URL not found")
 	}
 
-	// Update notes
-	listURL, err = h.listURLs.UpdateNotes(ctx, listURLID, notes)
+	// Find or create the URL (handles normalization and hashing)
+	url, _, err := h.urls.FindOrCreate(ctx, rawURL)
 	if err != nil {
-		c.Logger().Error("Failed to update notes:", err)
-		return c.String(http.StatusInternalServerError, "Failed to update notes")
+		c.Logger().Error("Failed to find/create url:", err)
+		return Render(c, http.StatusOK, views.EditNotesForm(listURL, "Invalid URL"))
+	}
+
+	// Update the list URL entry
+	listURL, err = h.listURLs.Update(ctx, listURLID, url.ID, notes)
+	if err != nil {
+		if err == stash.ErrURLAlreadyInList {
+			listURL, _ = h.listURLs.FindByIDWithURL(ctx, listURLID)
+			return Render(c, http.StatusOK, views.EditNotesForm(listURL, "URL already in this list"))
+		}
+		c.Logger().Error("Failed to update list url:", err)
+		return c.String(http.StatusInternalServerError, "Failed to update")
 	}
 
 	// Refetch with URL data
@@ -296,7 +308,7 @@ func (h *StashHandler) EditURLNotesForm(c echo.Context) error {
 		return c.String(http.StatusNotFound, "URL not found")
 	}
 
-	return Render(c, http.StatusOK, views.EditNotesForm(listURL))
+	return Render(c, http.StatusOK, views.EditNotesForm(listURL, ""))
 }
 
 // URLItem returns a single URL item (for HTMX refresh after cancel)

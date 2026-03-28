@@ -390,3 +390,9 @@ footer {
 	align-items: flex-start;
 	padding-top: 0.25rem;
 }
+
+.error-msg {
+	color: #c00;
+	font-size: 0.875rem;
+	margin: 0 0 0.5rem;
+}

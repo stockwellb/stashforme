@@ -114,7 +114,7 @@ templ URLItem(lu *stash.ListURL) {
 }
 
 // EditNotesForm renders the inline edit form for URL notes
-templ EditNotesForm(lu *stash.ListURL) {
+templ EditNotesForm(lu *stash.ListURL, errorMsg string) {
 	<li id={ fmt.Sprintf("url-%s", lu.ID) } class="url-item editing">
 		<form
 			hx-put={ fmt.Sprintf("/my/stash/urls/%s", lu.ID) }
@@ -123,14 +123,18 @@ templ EditNotesForm(lu *stash.ListURL) {
 			class="edit-form"
 		>
 			<div class="url-content">
-				<a href={ templ.SafeURL(lu.URL.URL) } target="_blank" rel="noopener noreferrer" class="url-link">
-					if lu.URL.Title != "" {
-						{ lu.URL.Title }
-					} else {
-						{ lu.URL.URL }
-					}
-					<i class="fa-solid fa-arrow-up-right-from-square fa-xs" aria-hidden="true"></i>
-				</a>
+				if errorMsg != "" {
+					<p class="error-msg">{ errorMsg }</p>
+				}
+				<input
+					type="url"
+					id={ fmt.Sprintf("url-%s", lu.ID) }
+					name="url"
+					value={ lu.URL.URL }
+					placeholder="https://example.com"
+					required
+					aria-label="URL"
+				/>
 				<input
 					type="text"
 					id={ fmt.Sprintf("notes-%s", lu.ID) }
