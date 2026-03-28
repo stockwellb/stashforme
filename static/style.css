@@ -57,7 +57,7 @@ body {
 }
 
 .site-logo:hover {
-	color: #fff;
+	color: #FB923C;
 }
 
 /* Hamburger menu */
@@ -77,8 +77,8 @@ body {
 }
 
 .menu-btn:hover {
-	background: #222;
-	color: #ccc;
+	background: #3a2a1a;
+	color: #FB923C;
 }
 
 .site-nav {
@@ -106,8 +106,8 @@ body {
 }
 
 .site-nav a:hover {
-	background: #222;
-	color: #fff;
+	background: #3a2a1a;
+	color: #FB923C;
 }
 
 .site-nav a i {
@@ -117,7 +117,7 @@ body {
 }
 
 .site-nav a:hover i {
-	color: #ccc;
+	color: #FB923C;
 }
 
 .site-nav hr {
@@ -145,8 +145,8 @@ body {
 }
 
 .nav-form button:hover {
-	background: #222;
-	color: #fff;
+	background: #3a2a1a;
+	color: #FB923C;
 }
 
 .nav-form button i {
@@ -156,7 +156,7 @@ body {
 }
 
 .nav-form button:hover i {
-	color: #ccc;
+	color: #FB923C;
 }
 
 /* Show menu when checkbox is checked */
@@ -205,7 +205,7 @@ input {
 
 input:focus {
 	outline: none;
-	border-color: #0066cc;
+	border-color: #FB923C;
 }
 
 button {
@@ -259,13 +259,13 @@ label {
 }
 
 .btn-primary {
-	background: #0066cc;
-	border-color: #0066cc;
-	color: #fff;
+	background: #FB923C;
+	border-color: #FB923C;
+	color: #111;
 }
 
 .btn-primary:hover {
-	background: #0077ee;
+	background: #F97316;
 }
 
 .btn-danger {
@@ -294,8 +294,8 @@ label {
 }
 
 .btn-icon:hover {
-	background: #333;
-	color: #ddd;
+	background: #3a2a1a;
+	color: #FB923C;
 }
 
 .btn-icon-danger:hover {
@@ -366,6 +366,15 @@ nav li {
 	margin-bottom: 0.25rem;
 }
 
+nav a {
+	color: #ccc;
+	text-decoration: none;
+}
+
+nav a:hover {
+	color: #FB923C;
+}
+
 /* Footer */
 footer {
 	margin-top: 2rem;
@@ -415,10 +424,12 @@ footer {
 	padding: 0.5rem;
 	text-decoration: none;
 	border-radius: 0.25rem;
+	color: #ccc;
 }
 
 #lists-nav ul a:hover {
-	background: #2a2a2a;
+	background: #3a2a1a;
+	color: #FB923C;
 }
 
 /* List header */
@@ -485,6 +496,11 @@ footer {
 	gap: 0.5rem;
 	font-weight: 500;
 	word-break: break-word;
+	color: #FB923C;
+}
+
+.url-link:hover {
+	color: #F97316;
 }
 
 .url-link i {

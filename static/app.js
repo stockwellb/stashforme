@@ -1,14 +1,3 @@
-// Close menu when clicking outside
-document.addEventListener('click', function(e) {
-	const toggle = document.getElementById('menu-toggle');
-	if (toggle && toggle.checked) {
-		const header = e.target.closest('.site-header');
-		if (!header) {
-			toggle.checked = false;
-		}
-	}
-});
-
 // Close menu when pressing Escape
 document.addEventListener('keydown', function(e) {
 	if (e.key === 'Escape') {
