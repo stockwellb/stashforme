@@ -1,11 +1,15 @@
 package views
 
-templ Login() {
+templ Login(errorMsg string) {
 	@Layout("Login - StashForMe") {
 		<h2>Login</h2>
 		<p>Enter your phone number to get started.</p>
 
-		<form method="POST" action="/auth/send-code">
+		if errorMsg != "" {
+			<p><strong>Error:</strong> { errorMsg }</p>
+		}
+
+		<form method="POST" action="/auth/send-code" class="card">
 			<p>
 				<label for="phone">Phone Number</label><br/>
 				<input

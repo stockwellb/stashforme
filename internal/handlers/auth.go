@@ -40,21 +40,26 @@ func NewAuthHandler(
 
 // Login renders the login page
 func (h *AuthHandler) Login(c echo.Context) error {
-	return Render(c, http.StatusOK, views.Login())
+	errorMsg := c.QueryParam("error")
+	return Render(c, http.StatusOK, views.Login(errorMsg))
 }
 
 // SendCode sends an OTP code and redirects to verify page
 func (h *AuthHandler) SendCode(c echo.Context) error {
 	phone := c.FormValue("phone")
 	if phone == "" {
-		return Render(c, http.StatusBadRequest, views.Login())
+		return Render(c, http.StatusBadRequest, views.Login("Phone number is required"))
 	}
 
 	phone = auth.NormalizePhoneNumber(phone)
 
 	if err := h.otp.SendCode(c.Request().Context(), phone); err != nil {
-		// Redirect back to login with error
-		return c.Redirect(http.StatusSeeOther, "/login")
+		errorMsg := "Failed to send code"
+		if errors.Is(err, auth.ErrRateLimited) {
+			errorMsg = "Too many requests, please try again later"
+		}
+		c.Logger().Error("Failed to send code:", err)
+		return c.Redirect(http.StatusSeeOther, "/login?error="+url.QueryEscape(errorMsg))
 	}
 
 	// Redirect to verify page with phone in query

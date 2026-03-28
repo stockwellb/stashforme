@@ -9,7 +9,7 @@ templ Verify(phone string, errorMsg string) {
 			<p><strong>Error:</strong> { errorMsg }</p>
 		}
 
-		<form method="POST" action="/auth/verify-code">
+		<form method="POST" action="/auth/verify-code" class="card">
 			<input type="hidden" name="phone" value={ phone }/>
 			<p>
 				<label for="code">Verification Code</label><br/>

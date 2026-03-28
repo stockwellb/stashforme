@@ -22,7 +22,7 @@ const (
 	// RateLimitWindow is the time window for rate limiting
 	RateLimitWindow = 1 * time.Hour
 	// MaxCodesPerWindow is the maximum OTP codes per rate limit window
-	MaxCodesPerWindow = 3
+	MaxCodesPerWindow = 10
 )
 
 var (
