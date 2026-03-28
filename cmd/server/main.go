@@ -109,7 +109,8 @@ func main() {
 	e.GET("/my/stash", h.Stash)
 	e.GET("/my/account", accountHandler.Account)
 	e.POST("/my/account/passkeys/register", accountHandler.RegisterPasskey)
-	e.POST("/my/account/passkeys/:id/delete", accountHandler.DeletePasskey)
+	e.DELETE("/my/account/passkeys/:id", accountHandler.DeletePasskey)
+	e.POST("/my/account/passkeys/:id", accountHandler.DeletePasskey) // Form fallback
 
 	// Auth routes
 	e.GET("/login", authHandler.Login)

@@ -6,7 +6,6 @@ import (
 	"github.com/a-h/templ"
 	"github.com/labstack/echo/v4"
 
-	"stashforme/internal/auth"
 	"stashforme/internal/views"
 )
 
@@ -20,31 +19,31 @@ func New() *Handler {
 
 // Home redirects to /my/stash if logged in, otherwise shows landing page
 func (h *Handler) Home(c echo.Context) error {
-	if user, ok := c.Get("user").(*auth.User); ok && user != nil {
-		return c.Redirect(http.StatusSeeOther, "/my/stash")
+	if user := GetUser(c); user != nil {
+		return c.Redirect(http.StatusSeeOther, PathMyStash)
 	}
 	return Render(c, http.StatusOK, views.Home())
 }
 
-// Ping is a simple health check endpoint for HTMX testing
+// Ping is a simple health check endpoint
 func (h *Handler) Ping(c echo.Context) error {
 	return c.String(http.StatusOK, "pong!")
 }
 
-// Me renders the user's account page
+// Me renders the user's profile page
 func (h *Handler) Me(c echo.Context) error {
-	user, ok := c.Get("user").(*auth.User)
-	if !ok || user == nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+	user := RequireUser(c)
+	if user == nil {
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 	return Render(c, http.StatusOK, views.Me(user))
 }
 
 // Stash renders the user's stash page
 func (h *Handler) Stash(c echo.Context) error {
-	user, ok := c.Get("user").(*auth.User)
-	if !ok || user == nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+	user := RequireUser(c)
+	if user == nil {
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 	return Render(c, http.StatusOK, views.Stash())
 }

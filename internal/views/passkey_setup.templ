@@ -1,6 +1,8 @@
 package views
 
-templ PasskeySetup(data PasskeyRegisterData) {
+import "stashforme/internal/auth"
+
+templ PasskeySetup(data auth.PasskeyRegisterData) {
 	@Layout("Setup Passkey - StashForMe") {
 		<h2>Create a Passkey</h2>
 		<p>Set up a passkey to sign in quickly next time using Face ID, Touch ID, or your device PIN.</p>
@@ -8,8 +10,9 @@ templ PasskeySetup(data PasskeyRegisterData) {
 		<div id="passkey-options" data-options={ data.JSON() }></div>
 
 		<p>
-			<button type="button" data-action="passkey-register">Create Passkey</button>
+			<button type="button" data-action="passkey-register" aria-describedby="passkey-help">Create Passkey</button>
 		</p>
+		<p id="passkey-help" class="visually-hidden">Opens your device's passkey creation dialog</p>
 
 		<form method="POST" action="/auth/skip-passkey">
 			<button type="submit">Skip for now</button>

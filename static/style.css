@@ -1,7 +1,25 @@
+/* Base styles */
 body {
 	font-family: system-ui, sans-serif;
+	line-height: 1.5;
+	margin: 0;
+	padding: 1rem;
 }
 
+/* Accessibility */
+.visually-hidden {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+/* Card component */
 .card {
 	background: #fff;
 	padding: 1.5rem;
@@ -10,6 +28,7 @@ body {
 	max-width: 400px;
 }
 
+/* Form elements */
 input, button {
 	font: inherit;
 	padding: 0.5rem;
@@ -18,12 +37,69 @@ input, button {
 input {
 	width: 100%;
 	max-width: 300px;
+	box-sizing: border-box;
 }
 
 button {
 	cursor: pointer;
 }
 
+fieldset {
+	border: none;
+	padding: 0;
+	margin: 0;
+}
+
+/* Links */
 a {
 	color: inherit;
+}
+
+/* Alerts */
+[role="alert"] {
+	padding: 0.75rem 1rem;
+	margin-bottom: 1rem;
+	border-left: 4px solid #c00;
+	background: #fee;
+}
+
+/* Hints */
+.hint {
+	font-size: 0.875rem;
+	color: #666;
+	margin-top: 0.25rem;
+}
+
+/* Tables */
+table {
+	border-collapse: collapse;
+	width: 100%;
+}
+
+th, td {
+	padding: 0.5rem;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+
+th {
+	font-weight: 600;
+}
+
+/* Navigation */
+nav ul {
+	list-style: none;
+	padding: 0;
+}
+
+nav li {
+	margin-bottom: 0.5rem;
+}
+
+/* Footer */
+footer {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid #ddd;
+	color: #666;
 }

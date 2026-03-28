@@ -6,33 +6,41 @@ templ Verify(phone string, errorMsg string) {
 		<p>We sent a verification code to { phone }</p>
 
 		if errorMsg != "" {
-			<p><strong>Error:</strong> { errorMsg }</p>
+			<div role="alert" aria-live="polite">
+				<strong>Error:</strong> { errorMsg }
+			</div>
 		}
 
 		<form method="POST" action="/auth/verify-code" class="card">
-			<input type="hidden" name="phone" value={ phone }/>
-			<p>
-				<label for="code">Verification Code</label><br/>
-				<input
-					type="text"
-					id="code"
-					name="code"
-					placeholder="123456"
-					required
-					autocomplete="one-time-code"
-					inputmode="numeric"
-					pattern="[0-9]{6}"
-					maxlength="6"
-					autofocus
-				/>
-			</p>
-			<p>
-				<button type="submit">Verify</button>
-			</p>
+			<fieldset>
+				<legend class="visually-hidden">Verify your phone number</legend>
+				<input type="hidden" name="phone" value={ phone }/>
+				<p>
+					<label for="code">Verification Code</label><br/>
+					<input
+						type="text"
+						id="code"
+						name="code"
+						placeholder="123456"
+						required
+						autocomplete="one-time-code"
+						inputmode="numeric"
+						pattern="[0-9]{6}"
+						maxlength="6"
+						autofocus
+						aria-required="true"
+						aria-describedby="code-hint"
+					/>
+				</p>
+				<p id="code-hint" class="hint">Enter the 6-digit code from your text message</p>
+				<p>
+					<button type="submit">Verify</button>
+				</p>
+			</fieldset>
 		</form>
 
-		<p>
+		<nav aria-label="Login options">
 			<a href="/login">Use a different number</a>
-		</p>
+		</nav>
 	}
 }

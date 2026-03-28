@@ -5,8 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
-	"net/url"
-	"time"
 
 	"github.com/go-webauthn/webauthn/protocol"
 	"github.com/labstack/echo/v4"
@@ -59,11 +57,10 @@ func (h *AuthHandler) SendCode(c echo.Context) error {
 			errorMsg = "Too many requests, please try again later"
 		}
 		c.Logger().Error("Failed to send code:", err)
-		return c.Redirect(http.StatusSeeOther, "/login?error="+url.QueryEscape(errorMsg))
+		return c.Redirect(http.StatusSeeOther, LoginURL(errorMsg))
 	}
 
-	// Redirect to verify page with phone in query
-	return c.Redirect(http.StatusSeeOther, "/verify?phone="+url.QueryEscape(phone))
+	return c.Redirect(http.StatusSeeOther, VerifyURL(phone, ""))
 }
 
 // VerifyPage renders the verification code entry page
@@ -71,7 +68,7 @@ func (h *AuthHandler) VerifyPage(c echo.Context) error {
 	phone := c.QueryParam("phone")
 	errorMsg := c.QueryParam("error")
 	if phone == "" {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 	return Render(c, http.StatusOK, views.Verify(phone, errorMsg))
 }
@@ -82,7 +79,7 @@ func (h *AuthHandler) VerifyCode(c echo.Context) error {
 	code := c.FormValue("code")
 
 	if phone == "" || code == "" {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
 	phone = auth.NormalizePhoneNumber(phone)
@@ -94,108 +91,44 @@ func (h *AuthHandler) VerifyCode(c echo.Context) error {
 		} else if errors.Is(err, auth.ErrOTPMaxAttempts) {
 			errorMsg = "Too many attempts"
 		}
-		return c.Redirect(http.StatusSeeOther, "/verify?phone="+url.QueryEscape(phone)+"&error="+url.QueryEscape(errorMsg))
+		return c.Redirect(http.StatusSeeOther, VerifyURL(phone, errorMsg))
 	}
 
-	// Find or create user
 	user, _, err := h.users.FindOrCreate(c.Request().Context(), phone)
 	if err != nil {
 		c.Logger().Error("Failed to find/create user:", err)
-		return c.Redirect(http.StatusSeeOther, "/verify?phone="+url.QueryEscape(phone)+"&error="+url.QueryEscape("Something went wrong"))
+		return c.Redirect(http.StatusSeeOther, VerifyURL(phone, "Something went wrong"))
 	}
 
-	// Check if user has passkeys
 	hasPasskey, err := h.passkeys.HasPasskey(c.Request().Context(), user.ID)
 	if err != nil {
 		c.Logger().Error("Failed to check passkeys:", err)
-		return c.Redirect(http.StatusSeeOther, "/verify?phone="+url.QueryEscape(phone)+"&error="+url.QueryEscape("Something went wrong"))
+		return c.Redirect(http.StatusSeeOther, VerifyURL(phone, "Something went wrong"))
 	}
 
 	if hasPasskey {
-		// User has passkeys, create session and go to profile
-		token, err := h.sessions.Create(c.Request().Context(), user.ID, c.Request().UserAgent(), c.RealIP())
-		if err != nil {
-			c.Logger().Error("Failed to create session:", err)
-			return c.Redirect(http.StatusSeeOther, "/login")
-		}
-		h.setSessionCookie(c, token)
-		return c.Redirect(http.StatusSeeOther, "/my/stash")
+		return h.createSessionAndRedirect(c, user.ID, PathMyStash)
 	}
 
 	// No passkey - redirect to passkey setup
-	// First, prepare the registration
-	options, sessionData, err := h.passkeys.BeginRegistration(c.Request().Context(), user.ID)
-	if err != nil {
-		c.Logger().Error("Failed to begin registration:", err)
-		// Create session anyway and skip passkey
-		token, _ := h.sessions.Create(c.Request().Context(), user.ID, c.Request().UserAgent(), c.RealIP())
-		h.setSessionCookie(c, token)
-		return c.Redirect(http.StatusSeeOther, "/my/stash")
-	}
-
-	// Store session data in cookies
-	c.SetCookie(&http.Cookie{
-		Name:     "webauthn_session",
-		Value:    base64.StdEncoding.EncodeToString(sessionData),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   300,
-	})
-	c.SetCookie(&http.Cookie{
-		Name:     "pending_user_id",
-		Value:    user.ID,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   300,
-	})
-
-	// Store options data for the page
-	userID, _ := options.Response.User.ID.([]byte)
-	c.SetCookie(&http.Cookie{
-		Name:     "passkey_options",
-		Value:    base64.StdEncoding.EncodeToString(mustJSON(views.PasskeyRegisterData{
-			Challenge:       base64.RawURLEncoding.EncodeToString(options.Response.Challenge),
-			RPID:            options.Response.RelyingParty.ID,
-			RPName:          options.Response.RelyingParty.Name,
-			UserID:          base64.RawURLEncoding.EncodeToString(userID),
-			UserName:        options.Response.User.Name,
-			UserDisplayName: options.Response.User.DisplayName,
-		})),
-		Path:     "/",
-		HttpOnly: false, // JS needs to read this
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   300,
-	})
-
-	return c.Redirect(http.StatusSeeOther, "/passkey/setup")
-}
-
-func mustJSON(v any) []byte {
-	b, _ := json.Marshal(v)
-	return b
+	return h.beginPasskeyRegistration(c, user.ID)
 }
 
 // PasskeySetupPage renders the passkey setup page
 func (h *AuthHandler) PasskeySetupPage(c echo.Context) error {
-	// Get options from cookie
-	optionsCookie, err := c.Cookie("passkey_options")
+	optionsCookie, err := c.Cookie(passkeyOptionsCookie)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
 	optionsData, err := base64.StdEncoding.DecodeString(optionsCookie.Value)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
-	var data views.PasskeyRegisterData
+	var data auth.PasskeyRegisterData
 	if err := json.Unmarshal(optionsData, &data); err != nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
 	return Render(c, http.StatusOK, views.PasskeySetup(data))
@@ -203,56 +136,44 @@ func (h *AuthHandler) PasskeySetupPage(c echo.Context) error {
 
 // PasskeyRegister completes passkey registration
 func (h *AuthHandler) PasskeyRegister(c echo.Context) error {
-	sessionCookie, err := c.Cookie("webauthn_session")
+	sessionData, err := getWebAuthnSessionData(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Session expired"})
+		return jsonError(c, http.StatusBadRequest, "Session expired")
 	}
 
-	userIDCookie, err := c.Cookie("pending_user_id")
+	userID, err := getPendingUserID(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Session expired"})
+		return jsonError(c, http.StatusBadRequest, "Session expired")
 	}
 
-	sessionData, err := base64.StdEncoding.DecodeString(sessionCookie.Value)
+	parsedResponse, err := h.parseCredentialCreation(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid session"})
+		c.Logger().Error("Failed to parse credential:", err)
+		return jsonError(c, http.StatusBadRequest, "Invalid credential")
 	}
 
-	var credentialResponse protocol.CredentialCreationResponse
-	if err := json.NewDecoder(c.Request().Body).Decode(&credentialResponse); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid credential"})
-	}
-
-	parsedResponse, err := credentialResponse.Parse()
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Failed to parse credential"})
-	}
-
-	if err := h.passkeys.FinishRegistration(c.Request().Context(), userIDCookie.Value, sessionData, parsedResponse); err != nil {
+	if err := h.passkeys.FinishRegistration(c.Request().Context(), userID, sessionData, parsedResponse); err != nil {
 		c.Logger().Error("Failed to finish registration:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to register passkey"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to register passkey")
 	}
 
-	// Clear WebAuthn cookies
-	h.clearWebAuthnCookies(c)
+	clearWebAuthnCookies(c)
 
-	// Create session
-	token, err := h.sessions.Create(c.Request().Context(), userIDCookie.Value, c.Request().UserAgent(), c.RealIP())
+	token, err := h.sessions.Create(c.Request().Context(), userID, c.Request().UserAgent(), c.RealIP())
 	if err != nil {
 		c.Logger().Error("Failed to create session:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create session"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to create session")
 	}
 
-	h.setSessionCookie(c, token)
-
-	return c.JSON(http.StatusOK, map[string]string{"redirect": "/my/stash"})
+	setSessionCookie(c, token)
+	return jsonRedirect(c, PathMyStash)
 }
 
 // PasskeyLogin starts passkey authentication
 func (h *AuthHandler) PasskeyLogin(c echo.Context) error {
 	phone := c.FormValue("phone")
 	if phone == "" {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Phone number is required"})
+		return jsonError(c, http.StatusBadRequest, "Phone number is required")
 	}
 
 	phone = auth.NormalizePhoneNumber(phone)
@@ -260,105 +181,78 @@ func (h *AuthHandler) PasskeyLogin(c echo.Context) error {
 	user, err := h.users.FindByPhone(c.Request().Context(), phone)
 	if err != nil {
 		if errors.Is(err, auth.ErrUserNotFound) {
-			return c.JSON(http.StatusNotFound, map[string]string{"error": "No account found"})
+			return jsonError(c, http.StatusNotFound, "No account found")
 		}
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to find user"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to find user")
 	}
 
 	options, sessionData, err := h.passkeys.BeginLogin(c.Request().Context(), user.ID)
 	if err != nil {
 		if errors.Is(err, auth.ErrPasskeyNotFound) {
-			return c.JSON(http.StatusNotFound, map[string]string{"error": "No passkey registered"})
+			return jsonError(c, http.StatusNotFound, "No passkey registered")
 		}
 		c.Logger().Error("Failed to begin login:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to start login"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to start login")
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     "webauthn_session",
-		Value:    base64.StdEncoding.EncodeToString(sessionData),
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   300,
-	})
-	c.SetCookie(&http.Cookie{
-		Name:     "pending_user_id",
-		Value:    user.ID,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteStrictMode,
-		MaxAge:   300,
-	})
+	setWebAuthnSessionCookie(c, sessionData)
+	setPendingUserCookie(c, user.ID)
 
 	return c.JSON(http.StatusOK, options)
 }
 
 // PasskeyLoginFinish completes passkey authentication
 func (h *AuthHandler) PasskeyLoginFinish(c echo.Context) error {
-	sessionCookie, err := c.Cookie("webauthn_session")
+	sessionData, err := getWebAuthnSessionData(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Session expired"})
+		return jsonError(c, http.StatusBadRequest, "Session expired")
 	}
 
-	userIDCookie, err := c.Cookie("pending_user_id")
+	userID, err := getPendingUserID(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Session expired"})
+		return jsonError(c, http.StatusBadRequest, "Session expired")
 	}
 
-	sessionData, err := base64.StdEncoding.DecodeString(sessionCookie.Value)
+	parsedResponse, err := h.parseCredentialAssertion(c)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid session"})
+		c.Logger().Error("Failed to parse assertion:", err)
+		return jsonError(c, http.StatusBadRequest, "Invalid assertion")
 	}
 
-	var assertionResponse protocol.CredentialAssertionResponse
-	if err := json.NewDecoder(c.Request().Body).Decode(&assertionResponse); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid assertion"})
-	}
-
-	parsedResponse, err := assertionResponse.Parse()
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Failed to parse assertion"})
-	}
-
-	userID := userIDCookie.Value
 	if err := h.passkeys.FinishLogin(c.Request().Context(), userID, sessionData, parsedResponse); err != nil {
 		c.Logger().Error("Failed to finish login:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to verify passkey"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to verify passkey")
 	}
 
-	h.clearWebAuthnCookies(c)
+	clearWebAuthnCookies(c)
 
 	token, err := h.sessions.Create(c.Request().Context(), userID, c.Request().UserAgent(), c.RealIP())
 	if err != nil {
 		c.Logger().Error("Failed to create session:", err)
-		return c.JSON(http.StatusInternalServerError, map[string]string{"error": "Failed to create session"})
+		return jsonError(c, http.StatusInternalServerError, "Failed to create session")
 	}
 
-	h.setSessionCookie(c, token)
-
-	return c.JSON(http.StatusOK, map[string]string{"redirect": "/my/stash"})
+	setSessionCookie(c, token)
+	return jsonRedirect(c, PathMyStash)
 }
 
 // SkipPasskey skips passkey setup and creates session
 func (h *AuthHandler) SkipPasskey(c echo.Context) error {
-	userIDCookie, err := c.Cookie("pending_user_id")
+	userID, err := getPendingUserID(c)
 	if err != nil {
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
-	token, err := h.sessions.Create(c.Request().Context(), userIDCookie.Value, c.Request().UserAgent(), c.RealIP())
+	token, err := h.sessions.Create(c.Request().Context(), userID, c.Request().UserAgent(), c.RealIP())
 	if err != nil {
 		c.Logger().Error("Failed to create session:", err)
-		return c.Redirect(http.StatusSeeOther, "/login")
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
 
-	h.setSessionCookie(c, token)
-	h.clearWebAuthnCookies(c)
+	setSessionCookie(c, token)
+	clearWebAuthnCookies(c)
 
-	return c.Redirect(http.StatusSeeOther, "/my/stash")
+	return c.Redirect(http.StatusSeeOther, PathMyStash)
 }
 
 // Logout destroys the current session
@@ -368,42 +262,60 @@ func (h *AuthHandler) Logout(c echo.Context) error {
 		_ = h.sessions.Delete(c.Request().Context(), cookie.Value)
 	}
 
-	c.SetCookie(&http.Cookie{
-		Name:     auth.SessionCookieName,
-		Value:    "",
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   -1,
-	})
-
-	return c.Redirect(http.StatusSeeOther, "/login")
+	clearSessionCookie(c)
+	return c.Redirect(http.StatusSeeOther, PathLogin)
 }
 
-func (h *AuthHandler) setSessionCookie(c echo.Context, token string) {
-	c.SetCookie(&http.Cookie{
-		Name:     auth.SessionCookieName,
-		Value:    token,
-		Path:     "/",
-		HttpOnly: true,
-		Secure:   c.Request().TLS != nil,
-		SameSite: http.SameSiteLaxMode,
-		MaxAge:   int(auth.SessionExpiry.Seconds()),
-	})
-}
+// Helper methods
 
-func (h *AuthHandler) clearWebAuthnCookies(c echo.Context) {
-	for _, name := range []string{"webauthn_session", "pending_user_id", "passkey_options"} {
-		c.SetCookie(&http.Cookie{
-			Name:     name,
-			Value:    "",
-			Path:     "/",
-			HttpOnly: true,
-			Secure:   c.Request().TLS != nil,
-			SameSite: http.SameSiteStrictMode,
-			MaxAge:   -1,
-			Expires:  time.Unix(0, 0),
-		})
+func (h *AuthHandler) createSessionAndRedirect(c echo.Context, userID, destination string) error {
+	token, err := h.sessions.Create(c.Request().Context(), userID, c.Request().UserAgent(), c.RealIP())
+	if err != nil {
+		c.Logger().Error("Failed to create session:", err)
+		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
+	setSessionCookie(c, token)
+	return c.Redirect(http.StatusSeeOther, destination)
+}
+
+func (h *AuthHandler) beginPasskeyRegistration(c echo.Context, userID string) error {
+	options, sessionData, err := h.passkeys.BeginRegistration(c.Request().Context(), userID)
+	if err != nil {
+		c.Logger().Error("Failed to begin registration:", err)
+		return h.createSessionAndRedirect(c, userID, PathMyStash)
+	}
+
+	setWebAuthnSessionCookie(c, sessionData)
+	setPendingUserCookie(c, userID)
+
+	userIDBinary, _ := options.Response.User.ID.([]byte)
+	data := auth.PasskeyRegisterData{
+		Challenge:       base64.RawURLEncoding.EncodeToString(options.Response.Challenge),
+		RPID:            options.Response.RelyingParty.ID,
+		RPName:          options.Response.RelyingParty.Name,
+		UserID:          base64.RawURLEncoding.EncodeToString(userIDBinary),
+		UserName:        options.Response.User.Name,
+		UserDisplayName: options.Response.User.DisplayName,
+	}
+
+	optionsJSON, _ := json.Marshal(data)
+	setPasskeyOptionsCookie(c, optionsJSON)
+
+	return c.Redirect(http.StatusSeeOther, PathPasskeySetup)
+}
+
+func (h *AuthHandler) parseCredentialCreation(c echo.Context) (*protocol.ParsedCredentialCreationData, error) {
+	var credentialResponse protocol.CredentialCreationResponse
+	if err := json.NewDecoder(c.Request().Body).Decode(&credentialResponse); err != nil {
+		return nil, err
+	}
+	return credentialResponse.Parse()
+}
+
+func (h *AuthHandler) parseCredentialAssertion(c echo.Context) (*protocol.ParsedCredentialAssertionData, error) {
+	var assertionResponse protocol.CredentialAssertionResponse
+	if err := json.NewDecoder(c.Request().Body).Decode(&assertionResponse); err != nil {
+		return nil, err
+	}
+	return assertionResponse.Parse()
 }

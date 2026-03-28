@@ -6,25 +6,31 @@ templ Login(errorMsg string) {
 		<p>Enter your phone number to get started.</p>
 
 		if errorMsg != "" {
-			<p><strong>Error:</strong> { errorMsg }</p>
+			<div role="alert" aria-live="polite">
+				<strong>Error:</strong> { errorMsg }
+			</div>
 		}
 
 		<form method="POST" action="/auth/send-code" class="card">
-			<p>
-				<label for="phone">Phone Number</label><br/>
-				<input
-					type="tel"
-					id="phone"
-					name="phone"
-					placeholder="555-123-4567"
-					required
-					autocomplete="tel"
-				/>
-			</p>
-			<p>
-				<button type="submit">Send Code</button>
-				<button type="button" data-action="passkey-login">Use Passkey</button>
-			</p>
+			<fieldset>
+				<legend class="visually-hidden">Login with phone number</legend>
+				<p>
+					<label for="phone">Phone Number</label><br/>
+					<input
+						type="tel"
+						id="phone"
+						name="phone"
+						placeholder="555-123-4567"
+						required
+						autocomplete="tel"
+						aria-required="true"
+					/>
+				</p>
+				<p>
+					<button type="submit">Send Code</button>
+					<button type="button" data-action="passkey-login" aria-label="Sign in using a passkey">Use Passkey</button>
+				</p>
+			</fieldset>
 		</form>
 	}
 }
