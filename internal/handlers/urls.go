@@ -10,7 +10,6 @@ const (
 	PathVerify       = "/verify"
 	PathMyStash      = "/my/stash"
 	PathMyAccount    = "/my/account"
-	PathMe           = "/me"
 	PathPasskeySetup = "/passkey/setup"
 
 	// Stash routes

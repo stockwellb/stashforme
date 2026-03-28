@@ -30,15 +30,6 @@ func (h *Handler) Ping(c echo.Context) error {
 	return c.String(http.StatusOK, "pong!")
 }
 
-// Me renders the user's profile page
-func (h *Handler) Me(c echo.Context) error {
-	user := RequireUser(c)
-	if user == nil {
-		return c.Redirect(http.StatusSeeOther, PathLogin)
-	}
-	return Render(c, http.StatusOK, views.Me(user))
-}
-
 // Render is a helper function to render templ components
 func Render(c echo.Context, status int, t templ.Component) error {
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTMLCharsetUTF8)

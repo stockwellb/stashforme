@@ -110,9 +110,8 @@ func main() {
 	e.GET("/api/ping", h.Ping)
 
 	// Protected routes
-	e.GET("/me", h.Me)
 	e.GET("/my", func(c echo.Context) error {
-		return c.Redirect(http.StatusMovedPermanently, "/me")
+		return c.Redirect(http.StatusMovedPermanently, "/my/stash")
 	})
 	e.GET("/my/account", accountHandler.Account)
 	e.POST("/my/account/passkeys/register", accountHandler.RegisterPasskey)

@@ -111,8 +111,7 @@ Core tables:
 - `GET /api/ping` - Health check
 
 **Protected (require auth):**
-- `GET /me` - User profile
-- `GET /my` - Redirects to `/me`
+- `GET /my` - Redirects to `/my/stash`
 - `GET /my/stash` - Link stash
 - `GET /my/account` - Account settings
 - `POST /my/account/passkeys/register` - Add new passkey
