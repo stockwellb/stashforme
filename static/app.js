@@ -122,10 +122,10 @@ async function registerPasskeyAccount() {
 }
 
 async function startPasskeyLogin() {
-	// Get phone number from form
+	// Get phone number from form - use native validation
 	const phoneInput = document.getElementById('phone');
 	if (!phoneInput || !phoneInput.value) {
-		alert('Please enter your phone number first');
+		phoneInput?.form?.reportValidity();
 		return;
 	}
 
