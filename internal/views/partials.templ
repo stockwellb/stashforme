@@ -1,0 +1,21 @@
+package views
+
+import "stashforme/internal/auth"
+
+templ ProfileCard(user *auth.User) {
+	<section class="card" aria-labelledby="profile-info">
+		<h3 id="profile-info" class="visually-hidden">Profile Information</h3>
+		<dl>
+			<dt>Phone</dt>
+			<dd>{ user.PhoneNumber }</dd>
+
+			if user.DisplayName != "" {
+				<dt>Name</dt>
+				<dd>{ user.DisplayName }</dd>
+			}
+
+			<dt>Member since</dt>
+			<dd>{ user.CreatedAt.Format("January 2, 2006") }</dd>
+		</dl>
+	</section>
+}

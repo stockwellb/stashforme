@@ -8,13 +8,7 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 	@Layout("Account Settings - StashForMe") {
 		<h2>Account Settings</h2>
 
-		<section class="card" aria-labelledby="profile-heading">
-			<h3 id="profile-heading">Profile</h3>
-			<dl>
-				<dt>Phone</dt>
-				<dd>{ user.PhoneNumber }</dd>
-			</dl>
-		</section>
+		@ProfileCard(user)
 
 		<section class="card" aria-labelledby="passkeys-heading">
 			<h3 id="passkeys-heading">Passkeys</h3>
