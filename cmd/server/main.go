@@ -87,6 +87,9 @@ func main() {
 	}))
 	e.Use(middleware.Recover())
 	e.Use(middleware.RequestID())
+	e.Pre(middleware.MethodOverrideWithConfig(middleware.MethodOverrideConfig{
+		Getter: middleware.MethodFromForm("_method"),
+	}))
 	e.Use(mw.Auth(sessionStore, userStore))
 
 	// Static files
@@ -110,7 +113,6 @@ func main() {
 	e.GET("/my/account", accountHandler.Account)
 	e.POST("/my/account/passkeys/register", accountHandler.RegisterPasskey)
 	e.DELETE("/my/account/passkeys/:id", accountHandler.DeletePasskey)
-	e.POST("/my/account/passkeys/:id", accountHandler.DeletePasskey) // Form fallback
 
 	// Auth routes
 	e.GET("/login", authHandler.Login)

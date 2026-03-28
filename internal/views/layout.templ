@@ -12,10 +12,11 @@ templ Layout(title string) {
 			<script src="/static/app.js" defer></script>
 		</head>
 		<body>
+			<a href="#main-content" class="skip-link">Skip to main content</a>
 			<header>
 				<h1><a href="/">StashForMe</a></h1>
 			</header>
-			<main>
+			<main id="main-content">
 				{ children... }
 			</main>
 			<footer>

@@ -6,7 +6,7 @@ templ Login(errorMsg string) {
 		<p>Enter your phone number to get started.</p>
 
 		if errorMsg != "" {
-			<div role="alert" aria-live="polite">
+			<div role="alert" aria-live="polite" id="phone-error">
 				<strong>Error:</strong> { errorMsg }
 			</div>
 		}
@@ -16,15 +16,29 @@ templ Login(errorMsg string) {
 				<legend class="visually-hidden">Login with phone number</legend>
 				<p>
 					<label for="phone">Phone Number</label><br/>
-					<input
-						type="tel"
-						id="phone"
-						name="phone"
-						placeholder="555-123-4567"
-						required
-						autocomplete="tel"
-						aria-required="true"
-					/>
+					if errorMsg != "" {
+						<input
+							type="tel"
+							id="phone"
+							name="phone"
+							placeholder="555-123-4567"
+							required
+							autocomplete="tel"
+							aria-required="true"
+							aria-invalid="true"
+							aria-errormessage="phone-error"
+						/>
+					} else {
+						<input
+							type="tel"
+							id="phone"
+							name="phone"
+							placeholder="555-123-4567"
+							required
+							autocomplete="tel"
+							aria-required="true"
+						/>
+					}
 				</p>
 				<p>
 					<button type="submit">Send Code</button>

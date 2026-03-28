@@ -38,6 +38,7 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 						<dt>Actions</dt>
 						<dd>
 							<form method="POST" action={ templ.SafeURL("/my/account/passkeys/" + p.ID) }>
+								<input type="hidden" name="_method" value="DELETE"/>
 								<button type="submit" aria-label="Delete this passkey">Delete</button>
 							</form>
 						</dd>

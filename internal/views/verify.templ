@@ -6,7 +6,7 @@ templ Verify(phone string, errorMsg string) {
 		<p>We sent a verification code to { phone }</p>
 
 		if errorMsg != "" {
-			<div role="alert" aria-live="polite">
+			<div role="alert" aria-live="polite" id="code-error">
 				<strong>Error:</strong> { errorMsg }
 			</div>
 		}
@@ -17,20 +17,39 @@ templ Verify(phone string, errorMsg string) {
 				<input type="hidden" name="phone" value={ phone }/>
 				<p>
 					<label for="code">Verification Code</label><br/>
-					<input
-						type="text"
-						id="code"
-						name="code"
-						placeholder="123456"
-						required
-						autocomplete="one-time-code"
-						inputmode="numeric"
-						pattern="[0-9]{6}"
-						maxlength="6"
-						autofocus
-						aria-required="true"
-						aria-describedby="code-hint"
-					/>
+					if errorMsg != "" {
+						<input
+							type="text"
+							id="code"
+							name="code"
+							placeholder="123456"
+							required
+							autocomplete="one-time-code"
+							inputmode="numeric"
+							pattern="[0-9]{6}"
+							maxlength="6"
+							autofocus
+							aria-required="true"
+							aria-invalid="true"
+							aria-errormessage="code-error"
+							aria-describedby="code-hint"
+						/>
+					} else {
+						<input
+							type="text"
+							id="code"
+							name="code"
+							placeholder="123456"
+							required
+							autocomplete="one-time-code"
+							inputmode="numeric"
+							pattern="[0-9]{6}"
+							maxlength="6"
+							autofocus
+							aria-required="true"
+							aria-describedby="code-hint"
+						/>
+					}
 				</p>
 				<p id="code-hint" class="hint">Enter the 6-digit code from your text message</p>
 				<p>

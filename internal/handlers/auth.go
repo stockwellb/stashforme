@@ -198,6 +198,8 @@ func (h *AuthHandler) PasskeyLogin(c echo.Context) error {
 	setWebAuthnSessionCookie(c, sessionData)
 	setPendingUserCookie(c, user.ID)
 
+	// Return raw WebAuthn options - not wrapped in Response struct
+	// because the WebAuthn API expects a specific structure with publicKey
 	return c.JSON(http.StatusOK, options)
 }
 
@@ -288,14 +290,10 @@ func (h *AuthHandler) beginPasskeyRegistration(c echo.Context, userID string) er
 	setWebAuthnSessionCookie(c, sessionData)
 	setPendingUserCookie(c, userID)
 
-	userIDBinary, _ := options.Response.User.ID.([]byte)
-	data := auth.PasskeyRegisterData{
-		Challenge:       base64.RawURLEncoding.EncodeToString(options.Response.Challenge),
-		RPID:            options.Response.RelyingParty.ID,
-		RPName:          options.Response.RelyingParty.Name,
-		UserID:          base64.RawURLEncoding.EncodeToString(userIDBinary),
-		UserName:        options.Response.User.Name,
-		UserDisplayName: options.Response.User.DisplayName,
+	data, err := auth.NewPasskeyRegisterData(options)
+	if err != nil {
+		c.Logger().Error("Failed to prepare registration data:", err)
+		return h.createSessionAndRedirect(c, userID, PathMyStash)
 	}
 
 	optionsJSON, _ := json.Marshal(data)

@@ -116,17 +116,7 @@ func (h *AccountHandler) preparePasskeyRegistration(c echo.Context, userID strin
 
 	setWebAuthnSessionCookie(c, sessionData)
 
-	userIDBinary, _ := options.Response.User.ID.([]byte)
-	data := &auth.PasskeyRegisterData{
-		Challenge:       base64.RawURLEncoding.EncodeToString(options.Response.Challenge),
-		RPID:            options.Response.RelyingParty.ID,
-		RPName:          options.Response.RelyingParty.Name,
-		UserID:          base64.RawURLEncoding.EncodeToString(userIDBinary),
-		UserName:        options.Response.User.Name,
-		UserDisplayName: options.Response.User.DisplayName,
-	}
-
-	return data, nil
+	return auth.NewPasskeyRegisterData(options)
 }
 
 func parseCredentialCreationFromJSON(data struct {
