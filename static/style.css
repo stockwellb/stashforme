@@ -36,6 +36,139 @@ body {
 	top: 0;
 }
 
+/* Site header */
+.site-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 0.75rem 0;
+	margin: -1rem -1rem 1rem;
+	padding: 0.75rem 1rem;
+	border-bottom: 1px solid #333;
+	background: #111;
+	position: relative;
+}
+
+.site-logo {
+	font-size: 1.25rem;
+	font-weight: 700;
+	text-decoration: none;
+	color: #ccc;
+}
+
+.site-logo:hover {
+	color: #fff;
+}
+
+/* Hamburger menu */
+.menu-toggle {
+	display: none;
+}
+
+.menu-btn {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 2.5rem;
+	height: 2.5rem;
+	cursor: pointer;
+	color: #999;
+	border-radius: 0.25rem;
+}
+
+.menu-btn:hover {
+	background: #222;
+	color: #ccc;
+}
+
+.site-nav {
+	display: none;
+	position: absolute;
+	top: 100%;
+	right: 0;
+	min-width: 12rem;
+	background: #1a1a1a;
+	border: 1px solid #333;
+	border-radius: 0.5rem;
+	padding: 0.5rem 0;
+	margin-top: 0.25rem;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	z-index: 50;
+}
+
+.site-nav a {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	padding: 0.75rem 1rem;
+	text-decoration: none;
+	color: #ccc;
+}
+
+.site-nav a:hover {
+	background: #222;
+	color: #fff;
+}
+
+.site-nav a i {
+	width: 1rem;
+	text-align: center;
+	color: #888;
+}
+
+.site-nav a:hover i {
+	color: #ccc;
+}
+
+.site-nav hr {
+	border: none;
+	border-top: 1px solid #333;
+	margin: 0.5rem 0;
+}
+
+.nav-form {
+	margin: 0;
+}
+
+.nav-form button {
+	display: flex;
+	align-items: center;
+	gap: 0.75rem;
+	width: 100%;
+	padding: 0.75rem 1rem;
+	text-align: left;
+	background: none;
+	border: none;
+	color: #ccc;
+	font: inherit;
+	cursor: pointer;
+}
+
+.nav-form button:hover {
+	background: #222;
+	color: #fff;
+}
+
+.nav-form button i {
+	width: 1rem;
+	text-align: center;
+	color: #888;
+}
+
+.nav-form button:hover i {
+	color: #ccc;
+}
+
+/* Show menu when checkbox is checked */
+.menu-toggle:checked ~ .site-nav {
+	display: block;
+}
+
+.menu-toggle:checked ~ .menu-btn {
+	background: #222;
+	color: #ccc;
+}
+
 /* Sections */
 section, nav {
 	margin: 0.5rem 0;

@@ -2,6 +2,7 @@ package views
 
 import (
 	"fmt"
+	"stashforme/internal/auth"
 	"stashforme/internal/stash"
 )
 
@@ -166,8 +167,8 @@ templ EditNotesForm(lu *stash.ListURL, errorMsg string) {
 }
 
 // NewListPage renders the page to create a new list
-templ NewListPage() {
-	@Layout(PageTitle("New List")) {
+templ NewListPage(user *auth.User) {
+	@Layout(PageTitle("New List"), user) {
 		<h2>Create New List</h2>
 		<form method="POST" action="/my/stash/lists" class="card">
 			<div class="form-group">
@@ -201,8 +202,8 @@ templ NewListPage() {
 }
 
 // NewURLPage renders the page to add a URL to a list
-templ NewURLPage(list *stash.List, errorMsg string) {
-	@Layout(PageTitle("Add Link")) {
+templ NewURLPage(user *auth.User, list *stash.List, errorMsg string) {
+	@Layout(PageTitle("Add Link"), user) {
 		<h2>Add Link to { list.Name }</h2>
 
 		if errorMsg != "" {

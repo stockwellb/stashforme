@@ -3,7 +3,7 @@ package views
 import "stashforme/internal/auth"
 
 templ Me(user *auth.User) {
-	@Layout(PageTitle("My Profile")) {
+	@Layout(PageTitle("My Profile"), user) {
 		<h2>My Profile</h2>
 
 		@ProfileCard(user)

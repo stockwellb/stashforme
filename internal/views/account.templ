@@ -5,7 +5,7 @@ import (
 )
 
 templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.PasskeyRegisterData) {
-	@Layout(PageTitle("Account Settings")) {
+	@Layout(PageTitle("Account Settings"), user) {
 		<h2>Account Settings</h2>
 
 		@ProfileCard(user)

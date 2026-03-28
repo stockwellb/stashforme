@@ -68,7 +68,7 @@ func (h *StashHandler) Stash(c echo.Context) error {
 		listURLs = []*stash.ListURL{}
 	}
 
-	return Render(c, http.StatusOK, views.Stash(lists, selectedList, listURLs))
+	return Render(c, http.StatusOK, views.Stash(user, lists, selectedList, listURLs))
 }
 
 // ListDetail returns the content for a selected list (HTMX partial)
@@ -101,7 +101,7 @@ func (h *StashHandler) NewListPage(c echo.Context) error {
 	if user == nil {
 		return c.Redirect(http.StatusSeeOther, PathLogin)
 	}
-	return Render(c, http.StatusOK, views.NewListPage())
+	return Render(c, http.StatusOK, views.NewListPage(user))
 }
 
 // CreateList creates a new list and redirects to it
@@ -191,7 +191,7 @@ func (h *StashHandler) NewURLPage(c echo.Context) error {
 	}
 
 	errorMsg := c.QueryParam("error")
-	return Render(c, http.StatusOK, views.NewURLPage(list, errorMsg))
+	return Render(c, http.StatusOK, views.NewURLPage(user, list, errorMsg))
 }
 
 // AddURL adds a URL to a list and redirects back

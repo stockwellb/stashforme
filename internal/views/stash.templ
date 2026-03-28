@@ -1,9 +1,12 @@
 package views
 
-import "stashforme/internal/stash"
+import (
+	"stashforme/internal/auth"
+	"stashforme/internal/stash"
+)
 
-templ Stash(lists []*stash.List, selectedList *stash.List, listURLs []*stash.ListURL) {
-	@Layout(PageTitle("My Stash")) {
+templ Stash(user *auth.User, lists []*stash.List, selectedList *stash.List, listURLs []*stash.ListURL) {
+	@Layout(PageTitle("My Stash"), user) {
 		<h2>My Stash</h2>
 
 		<div id="stash-container">
