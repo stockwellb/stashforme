@@ -1,11 +1,21 @@
 package views
 
 templ Home() {
-	@Layout("StashForMe") {
-		<h2>Your Stash</h2>
-		<p>Your links will appear here.</p>
-		<form hx-post="/auth/logout" hx-swap="none">
-			<button type="submit">Logout</button>
-		</form>
+	@Layout("StashForMe - Save and Share Links") {
+		<h2>StashForMe</h2>
+		<p>Save links and share them easily via text message.</p>
+
+		<section>
+			<h3>How it works</h3>
+			<ol>
+				<li>Save links to your stash</li>
+				<li>Organize them into lists</li>
+				<li>Share lists with anyone via SMS</li>
+			</ol>
+		</section>
+
+		<p>
+			<a href="/login">Get Started</a>
+		</p>
 	}
 }

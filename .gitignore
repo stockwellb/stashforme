@@ -34,7 +34,7 @@ go.work.sum
 # Build artifacts
 bin/
 tmp/
-server
+/server
 
 # Generated templ files (optional - some prefer to commit these)
 *_templ.go

@@ -1,0 +1,38 @@
+package views
+
+templ Verify(phone string, errorMsg string) {
+	@Layout("Verify - StashForMe") {
+		<h2>Enter Code</h2>
+		<p>We sent a verification code to { phone }</p>
+
+		if errorMsg != "" {
+			<p><strong>Error:</strong> { errorMsg }</p>
+		}
+
+		<form method="POST" action="/auth/verify-code">
+			<input type="hidden" name="phone" value={ phone }/>
+			<p>
+				<label for="code">Verification Code</label><br/>
+				<input
+					type="text"
+					id="code"
+					name="code"
+					placeholder="123456"
+					required
+					autocomplete="one-time-code"
+					inputmode="numeric"
+					pattern="[0-9]{6}"
+					maxlength="6"
+					autofocus
+				/>
+			</p>
+			<p>
+				<button type="submit">Verify</button>
+			</p>
+		</form>
+
+		<p>
+			<a href="/login">Use a different number</a>
+		</p>
+	}
+}

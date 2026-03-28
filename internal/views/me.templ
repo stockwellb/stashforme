@@ -1,0 +1,33 @@
+package views
+
+import "stashforme/internal/auth"
+
+templ Me(user *auth.User) {
+	@Layout("My Account - StashForMe") {
+		<h2>My Account</h2>
+
+		<dl>
+			<dt>Phone</dt>
+			<dd>{ user.PhoneNumber }</dd>
+
+			if user.DisplayName != "" {
+				<dt>Name</dt>
+				<dd>{ user.DisplayName }</dd>
+			}
+
+			<dt>Member since</dt>
+			<dd>{ user.CreatedAt.Format("January 2, 2006") }</dd>
+		</dl>
+
+		<nav>
+			<ul>
+				<li><a href="/my/stash">My Stash</a></li>
+				<li><a href="/my/account">Account Settings</a></li>
+			</ul>
+		</nav>
+
+		<form method="POST" action="/auth/logout">
+			<button type="submit">Logout</button>
+		</form>
+	}
+}

@@ -5,12 +5,7 @@ templ Login() {
 		<h2>Login</h2>
 		<p>Enter your phone number to get started.</p>
 
-		<form
-			hx-post="/auth/send-code"
-			hx-target="#auth-form"
-			hx-swap="innerHTML"
-			id="auth-form"
-		>
+		<form method="POST" action="/auth/send-code">
 			<p>
 				<label for="phone">Phone Number</label><br/>
 				<input

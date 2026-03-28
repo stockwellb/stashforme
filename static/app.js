@@ -10,6 +10,7 @@ document.addEventListener('click', function(e) {
 // Action handlers
 const handlers = {
 	'passkey-register': registerPasskey,
+	'passkey-register-account': registerPasskeyAccount,
 	'passkey-login': startPasskeyLogin
 };
 
@@ -70,12 +71,47 @@ async function registerPasskey() {
 			})
 		});
 
-		const redirectUrl = response.headers.get('HX-Redirect');
-		if (redirectUrl) {
-			window.location.href = redirectUrl;
-		} else if (!response.ok) {
-			const html = await response.text();
-			document.getElementById('auth-form').innerHTML = html;
+		const result = await response.json();
+		if (response.ok && result.redirect) {
+			window.location.href = result.redirect;
+		} else {
+			alert(result.error || 'Failed to register passkey');
+		}
+	} catch (err) {
+		console.error('Passkey registration error:', err);
+		if (err.name !== 'NotAllowedError') {
+			alert('Failed to create passkey. Please try again.');
+		}
+	}
+}
+
+async function registerPasskeyAccount() {
+	if (!window.passkeyOptions) {
+		alert('Passkey options not loaded');
+		return;
+	}
+	try {
+		const credential = await navigator.credentials.create(window.passkeyOptions);
+
+		const response = await fetch('/my/account/passkeys/register', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({
+				id: credential.id,
+				rawId: bufferToBase64(credential.rawId),
+				type: credential.type,
+				response: {
+					attestationObject: bufferToBase64(credential.response.attestationObject),
+					clientDataJSON: bufferToBase64(credential.response.clientDataJSON)
+				}
+			})
+		});
+
+		const result = await response.json();
+		if (response.ok && result.redirect) {
+			window.location.href = result.redirect;
+		} else {
+			alert(result.error || 'Failed to register passkey');
 		}
 	} catch (err) {
 		console.error('Passkey registration error:', err);

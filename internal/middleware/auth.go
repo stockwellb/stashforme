@@ -33,8 +33,11 @@ func DefaultSkipper(c echo.Context) bool {
 	publicPaths := []string{
 		"/",
 		"/login",
+		"/verify",
+		"/passkey/setup",
 		"/auth/send-code",
 		"/auth/verify-code",
+		"/auth/skip-passkey",
 		"/auth/passkey/register",
 		"/auth/passkey/login",
 		"/auth/passkey/login/finish",

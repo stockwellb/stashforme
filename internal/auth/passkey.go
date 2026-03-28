@@ -309,6 +309,56 @@ func (s *PasskeyService) HasPasskey(ctx context.Context, userID string) (bool, e
 	return count > 0, nil
 }
 
+// ListPasskeys returns all passkeys for a user
+func (s *PasskeyService) ListPasskeys(ctx context.Context, userID string) ([]Passkey, error) {
+	rows, err := s.db.QueryContext(ctx, `
+		SELECT id, user_id, credential_id, device_name, created_at, last_used_at
+		FROM passkeys WHERE user_id = $1
+		ORDER BY created_at DESC
+	`, userID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to list passkeys: %w", err)
+	}
+	defer rows.Close()
+
+	var passkeys []Passkey
+	for rows.Next() {
+		var p Passkey
+		var deviceName sql.NullString
+		var lastUsedAt sql.NullTime
+		if err := rows.Scan(&p.ID, &p.UserID, &p.CredentialID, &deviceName, &p.CreatedAt, &lastUsedAt); err != nil {
+			return nil, fmt.Errorf("failed to scan passkey: %w", err)
+		}
+		p.DeviceName = deviceName.String
+		if lastUsedAt.Valid {
+			p.LastUsedAt = &lastUsedAt.Time
+		}
+		passkeys = append(passkeys, p)
+	}
+
+	return passkeys, rows.Err()
+}
+
+// DeletePasskey removes a passkey by ID for a user
+func (s *PasskeyService) DeletePasskey(ctx context.Context, userID, passkeyID string) error {
+	result, err := s.db.ExecContext(ctx, `
+		DELETE FROM passkeys WHERE id = $1 AND user_id = $2
+	`, passkeyID, userID)
+	if err != nil {
+		return fmt.Errorf("failed to delete passkey: %w", err)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("failed to check delete result: %w", err)
+	}
+	if rows == 0 {
+		return ErrPasskeyNotFound
+	}
+
+	return nil
+}
+
 // getCredentialsForUser retrieves all credentials for a user
 func (s *PasskeyService) getCredentialsForUser(ctx context.Context, userID string) ([]webauthn.Credential, error) {
 	rows, err := s.db.QueryContext(ctx, `
