@@ -61,16 +61,15 @@ body {
 }
 
 /* Hamburger menu */
-.menu-toggle {
-	display: none;
-}
-
 .menu-btn {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	width: 2.5rem;
 	height: 2.5rem;
+	padding: 0;
+	border: none;
+	background: transparent;
 	cursor: pointer;
 	color: #999;
 	border-radius: 0.25rem;
@@ -159,12 +158,12 @@ body {
 	color: #FB923C;
 }
 
-/* Show menu when checkbox is checked */
-.menu-toggle:checked ~ .site-nav {
+/* Show menu when open */
+.site-nav.open {
 	display: block;
 }
 
-.menu-toggle:checked ~ .menu-btn {
+.menu-btn[aria-expanded="true"] {
 	background: #222;
 	color: #ccc;
 }

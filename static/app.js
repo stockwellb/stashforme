@@ -1,10 +1,39 @@
-// Close menu when pressing Escape
-document.addEventListener('keydown', function(e) {
-	if (e.key === 'Escape') {
+// Hamburger menu
+(function() {
+	function initMenu() {
 		const toggle = document.getElementById('menu-toggle');
-		if (toggle) toggle.checked = false;
+		const nav = document.getElementById('site-nav');
+		if (!toggle || !nav) return;
+
+		// Toggle menu on button click
+		toggle.addEventListener('click', function(e) {
+			e.stopPropagation();
+			const isOpen = nav.classList.toggle('open');
+			toggle.setAttribute('aria-expanded', isOpen);
+		});
+
+		// Close on click outside
+		document.addEventListener('click', function(e) {
+			if (!nav.classList.contains('open')) return;
+			if (!nav.contains(e.target) && !toggle.contains(e.target)) {
+				nav.classList.remove('open');
+				toggle.setAttribute('aria-expanded', 'false');
+			}
+		});
+
+		// Close on Escape
+		document.addEventListener('keydown', function(e) {
+			if (e.key === 'Escape' && nav.classList.contains('open')) {
+				nav.classList.remove('open');
+				toggle.setAttribute('aria-expanded', 'false');
+				toggle.focus();
+			}
+		});
 	}
-});
+
+	document.addEventListener('DOMContentLoaded', initMenu);
+	document.body.addEventListener('htmx:afterSettle', initMenu);
+})();
 
 // Convert <time> elements to local timezone
 function formatLocalTimes() {
