@@ -1,0 +1,31 @@
+package views
+
+templ Login() {
+	@Layout("Login - StashForMe") {
+		<h2>Login</h2>
+		<p>Enter your phone number to get started.</p>
+
+		<form
+			hx-post="/auth/send-code"
+			hx-target="#auth-form"
+			hx-swap="innerHTML"
+			id="auth-form"
+		>
+			<p>
+				<label for="phone">Phone Number</label><br/>
+				<input
+					type="tel"
+					id="phone"
+					name="phone"
+					placeholder="555-123-4567"
+					required
+					autocomplete="tel"
+				/>
+			</p>
+			<p>
+				<button type="submit">Send Code</button>
+				<button type="button" data-action="passkey-login">Use Passkey</button>
+			</p>
+		</form>
+	}
+}

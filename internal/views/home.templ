@@ -1,0 +1,11 @@
+package views
+
+templ Home() {
+	@Layout("StashForMe") {
+		<h2>Your Stash</h2>
+		<p>Your links will appear here.</p>
+		<form hx-post="/auth/logout" hx-swap="none">
+			<button type="submit">Logout</button>
+		</form>
+	}
+}

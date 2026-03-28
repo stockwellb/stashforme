@@ -1,0 +1,23 @@
+package views
+
+templ Layout(title string) {
+	<!DOCTYPE html>
+	<html lang="en">
+		<head>
+			<meta charset="UTF-8"/>
+			<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+			<title>{ title }</title>
+			<link rel="stylesheet" href="/static/style.css"/>
+			<script src="https://unpkg.com/htmx.org@2.0.4"></script>
+			<script src="/static/app.js" defer></script>
+		</head>
+		<body>
+			<header>
+				<h1>StashForMe</h1>
+			</header>
+			<main>
+				{ children... }
+			</main>
+		</body>
+	</html>
+}

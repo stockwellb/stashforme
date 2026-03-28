@@ -1,0 +1,68 @@
+package views
+
+import "encoding/json"
+
+templ AuthError(message string) {
+	<p><strong>Error:</strong> { message }</p>
+}
+
+templ AuthSuccess(message string) {
+	<p><strong>{ message }</strong></p>
+}
+
+templ VerifyCodeForm(phone string) {
+	<p><strong>Code sent!</strong></p>
+	<form
+		hx-post="/auth/verify-code"
+		hx-target="#auth-form"
+		hx-swap="innerHTML"
+	>
+		<input type="hidden" name="phone" value={ phone }/>
+		<p>
+			<label for="code">Verification Code</label><br/>
+			<input
+				type="text"
+				id="code"
+				name="code"
+				placeholder="123456"
+				required
+				autocomplete="one-time-code"
+				inputmode="numeric"
+				pattern="[0-9]{6}"
+				maxlength="6"
+				autofocus
+			/>
+		</p>
+		<p>
+			<button type="submit">Verify</button>
+		</p>
+	</form>
+	<p>
+		<a href="#" hx-post="/auth/send-code" hx-vals={ `{"phone":"` + phone + `"}` } hx-target="#auth-form" hx-swap="innerHTML">
+			Resend code
+		</a>
+	</p>
+}
+
+type PasskeyRegisterData struct {
+	Challenge       string `json:"challenge"`
+	RPID            string `json:"rpId"`
+	RPName          string `json:"rpName"`
+	UserID          string `json:"userId"`
+	UserName        string `json:"userName"`
+	UserDisplayName string `json:"userDisplayName"`
+}
+
+func (d PasskeyRegisterData) JSON() string {
+	b, _ := json.Marshal(d)
+	return string(b)
+}
+
+templ PasskeyRegister(data PasskeyRegisterData) {
+	<p><strong>Phone verified!</strong></p>
+	<p>Create a passkey to sign in quickly next time.</p>
+	<div id="passkey-options" data-options={ data.JSON() }></div>
+	<p>
+		<button type="button" data-action="passkey-register">Create Passkey</button>
+	</p>
+}

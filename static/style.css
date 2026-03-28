@@ -1,0 +1,21 @@
+body {
+	font-family: system-ui, sans-serif;
+}
+
+input, button {
+	font: inherit;
+	padding: 0.5rem;
+}
+
+input {
+	width: 100%;
+	max-width: 300px;
+}
+
+button {
+	cursor: pointer;
+}
+
+a {
+	color: inherit;
+}
