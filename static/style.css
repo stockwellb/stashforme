@@ -35,7 +35,7 @@ body {
 }
 
 /* Sections */
-section {
+section, nav {
 	margin: 0.5rem 0;
 }
 
@@ -45,6 +45,10 @@ section {
 	border: 1px solid #ddd;
 	border-radius: 0.5rem;
 	max-width: 25rem;
+}
+
+#stash-container .card {
+	max-width: none;
 }
 
 /* Form elements */
@@ -67,6 +71,91 @@ fieldset {
 	border: none;
 	padding: 0;
 	margin: 0;
+}
+
+label {
+	display: block;
+	font-weight: 600;
+	margin-bottom: 0.25rem;
+}
+
+/* Form groups */
+.form-group {
+	margin-bottom: 1rem;
+}
+
+.form-group .hint {
+	font-weight: normal;
+}
+
+.form-actions {
+	display: flex;
+	gap: 0.5rem;
+	margin-top: 1.5rem;
+}
+
+/* Buttons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 1rem;
+	border: 1px solid #ddd;
+	border-radius: 0.25rem;
+	background: #fff;
+	color: inherit;
+	text-decoration: none;
+	cursor: pointer;
+	font: inherit;
+}
+
+.btn:hover {
+	background: #f5f5f5;
+}
+
+.btn-primary {
+	background: #0066cc;
+	border-color: #0066cc;
+	color: #fff;
+}
+
+.btn-primary:hover {
+	background: #0052a3;
+}
+
+.btn-danger {
+	background: #dc3545;
+	border-color: #dc3545;
+	color: #fff;
+}
+
+.btn-danger:hover {
+	background: #c82333;
+}
+
+/* Icon buttons */
+.btn-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 2rem;
+	height: 2rem;
+	padding: 0;
+	border: none;
+	border-radius: 0.25rem;
+	background: transparent;
+	color: #666;
+	cursor: pointer;
+}
+
+.btn-icon:hover {
+	background: #f0f0f0;
+	color: #333;
+}
+
+.btn-icon-danger:hover {
+	background: #fee;
+	color: #c00;
 }
 
 /* Links */
@@ -125,10 +214,11 @@ dd:last-child {
 nav ul {
 	list-style: none;
 	padding: 0;
+	margin: 0;
 }
 
 nav li {
-	margin-bottom: 0.5rem;
+	margin-bottom: 0.25rem;
 }
 
 /* Footer */
@@ -137,4 +227,166 @@ footer {
 	padding-top: 1rem;
 	border-top: 1px solid #ddd;
 	color: #666;
+}
+
+/* Stash layout */
+#stash-container {
+	display: flex;
+	flex-direction: column;
+	gap: 1.5rem;
+}
+
+@media (min-width: 48rem) {
+	#stash-container {
+		flex-direction: row;
+	}
+
+	#stash-container > nav {
+		flex: 0 0 14rem;
+	}
+
+	#stash-container > section {
+		flex: 1;
+	}
+}
+
+/* List navigation */
+.nav-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 0.5rem;
+	padding-bottom: 0.5rem;
+	border-bottom: 1px solid #eee;
+}
+
+#lists-nav a[aria-current="page"] {
+	font-weight: 600;
+	background: #f5f5f5;
+}
+
+#lists-nav ul a {
+	display: block;
+	padding: 0.5rem;
+	text-decoration: none;
+	border-radius: 0.25rem;
+}
+
+#lists-nav ul a:hover {
+	background: #f0f0f0;
+}
+
+/* List header */
+.list-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 1rem;
+}
+
+.list-header h3 {
+	margin: 0;
+}
+
+/* List actions */
+.list-actions {
+	margin-top: 2rem;
+	padding-top: 1rem;
+	border-top: 1px solid #eee;
+}
+
+/* URL list */
+#url-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+#url-list > li {
+	padding: 1rem 0;
+	border-bottom: 1px solid #eee;
+}
+
+#url-list > li:first-child {
+	padding-top: 0;
+}
+
+#url-list > li:last-child {
+	border-bottom: none;
+}
+
+#url-list > #empty-state {
+	border-bottom: none;
+	padding: 3rem 0;
+	text-align: center;
+}
+
+/* URL item */
+.url-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+}
+
+.url-content {
+	flex: 1;
+	min-width: 0;
+}
+
+.url-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-weight: 500;
+	word-break: break-word;
+}
+
+.url-link i {
+	flex-shrink: 0;
+	opacity: 0.5;
+}
+
+.url-notes {
+	margin: 0.25rem 0 0;
+	color: #666;
+}
+
+.url-meta {
+	margin: 0.25rem 0 0;
+}
+
+.url-actions {
+	display: flex;
+	gap: 0.25rem;
+	flex-shrink: 0;
+}
+
+/* Edit form */
+.url-item.editing {
+	background: #f9f9f9;
+	margin: 0 -1rem;
+	padding: 1rem;
+	border-radius: 0.5rem;
+}
+
+.url-item.editing .url-content input {
+	margin-top: 0.5rem;
+}
+
+.edit-form {
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
+	gap: 1rem;
+	width: 100%;
+}
+
+.edit-form .url-content {
+	flex: 1;
+}
+
+.edit-form .url-actions {
+	align-items: flex-start;
+	padding-top: 0.25rem;
 }

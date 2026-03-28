@@ -1,4 +1,4 @@
-# StashForMe
+# stashfor.me
 
 Save links, organize them into lists, and share them via SMS.
 
@@ -54,7 +54,7 @@ SMS_PROVIDER=mock
 # WebAuthn (adjust for your domain)
 WEBAUTHN_RP_ID=localhost
 WEBAUTHN_RP_ORIGIN=http://localhost:8080
-WEBAUTHN_RP_NAME=StashForMe
+WEBAUTHN_RP_NAME=stashfor.me
 
 PORT=8080
 ```

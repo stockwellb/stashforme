@@ -3,7 +3,7 @@ package views
 import "stashforme/internal/auth"
 
 templ PasskeySetup(data auth.PasskeyRegisterData) {
-	@Layout("Setup Passkey - StashForMe") {
+	@Layout(PageTitle("Setup Passkey")) {
 		<h2>Create a Passkey</h2>
 		<p>Set up a passkey to sign in quickly next time using Face ID, Touch ID, or your device PIN.</p>
 

@@ -1,0 +1,237 @@
+package views
+
+import (
+	"fmt"
+	"stashforme/internal/stash"
+)
+
+// ListNavItem renders a single list in the navigation
+templ ListNavItem(list *stash.List, selected bool) {
+	<li id={ fmt.Sprintf("list-nav-%s", list.ID) }>
+		<a
+			href={ templ.SafeURL(fmt.Sprintf("/my/stash?list=%s", list.ID)) }
+			hx-get={ fmt.Sprintf("/my/stash/lists/%s", list.ID) }
+			hx-target="#list-content"
+			hx-swap="innerHTML"
+			hx-push-url={ fmt.Sprintf("/my/stash?list=%s", list.ID) }
+			if selected {
+				aria-current="page"
+			}
+		>
+			{ list.Name }
+			if list.IsDefault {
+				<span class="visually-hidden">(default)</span>
+			}
+		</a>
+	</li>
+}
+
+// ListContent renders the main content area for a selected list
+templ ListContent(list *stash.List, listURLs []*stash.ListURL) {
+	<header class="list-header">
+		<h3 id="list-heading">{ list.Name }</h3>
+		<a href={ templ.SafeURL(fmt.Sprintf("/my/stash/%s/new", list.ID)) } class="btn-icon" title="Add link">
+			<i class="fa-solid fa-plus" aria-hidden="true"></i>
+			<span class="visually-hidden">Add Link</span>
+		</a>
+	</header>
+
+	if list.Description != "" {
+		<p>{ list.Description }</p>
+	}
+
+	<ol id="url-list" aria-label="Saved links">
+		if len(listURLs) == 0 {
+			<li id="empty-state" class="hint">No links saved yet.</li>
+		}
+		for _, lu := range listURLs {
+			@URLItem(lu)
+		}
+	</ol>
+
+	if !list.IsDefault {
+		<section class="list-actions" aria-labelledby="list-actions-heading">
+			<h4 id="list-actions-heading" class="visually-hidden">List Actions</h4>
+			<button
+				type="button"
+				class="btn btn-danger"
+				hx-delete={ fmt.Sprintf("/my/stash/lists/%s", list.ID) }
+				hx-confirm="Delete this list? All links will be removed."
+			>
+				<i class="fa-solid fa-trash" aria-hidden="true"></i> Delete List
+			</button>
+		</section>
+	}
+}
+
+// URLItem renders a single URL in the list
+templ URLItem(lu *stash.ListURL) {
+	<li id={ fmt.Sprintf("url-%s", lu.ID) } class="url-item">
+		<div class="url-content">
+			<a href={ templ.SafeURL(lu.URL.URL) } target="_blank" rel="noopener noreferrer" class="url-link">
+				if lu.URL.Title != "" {
+					{ lu.URL.Title }
+				} else {
+					{ lu.URL.URL }
+				}
+				<i class="fa-solid fa-arrow-up-right-from-square fa-xs" aria-hidden="true"></i>
+			</a>
+			if lu.Notes != "" {
+				<p class="url-notes">{ lu.Notes }</p>
+			}
+			<p class="url-meta hint">
+				<time datetime={ lu.CreatedAt.UTC().Format("2006-01-02T15:04:05Z") }>
+					{ lu.CreatedAt.UTC().Format("Jan 2, 2006") }
+				</time>
+			</p>
+		</div>
+		<div class="url-actions">
+			<button
+				type="button"
+				class="btn-icon"
+				title="Edit notes"
+				hx-get={ fmt.Sprintf("/my/stash/urls/%s/edit", lu.ID) }
+				hx-target={ fmt.Sprintf("#url-%s", lu.ID) }
+				hx-swap="outerHTML"
+			>
+				<i class="fa-solid fa-pen" aria-hidden="true"></i>
+				<span class="visually-hidden">Edit</span>
+			</button>
+			<button
+				type="button"
+				class="btn-icon btn-icon-danger"
+				title="Remove link"
+				hx-delete={ fmt.Sprintf("/my/stash/urls/%s", lu.ID) }
+				hx-target={ fmt.Sprintf("#url-%s", lu.ID) }
+				hx-swap="outerHTML"
+				hx-confirm="Remove this link?"
+			>
+				<i class="fa-solid fa-trash" aria-hidden="true"></i>
+				<span class="visually-hidden">Remove</span>
+			</button>
+		</div>
+	</li>
+}
+
+// EditNotesForm renders the inline edit form for URL notes
+templ EditNotesForm(lu *stash.ListURL) {
+	<li id={ fmt.Sprintf("url-%s", lu.ID) } class="url-item editing">
+		<form
+			hx-put={ fmt.Sprintf("/my/stash/urls/%s", lu.ID) }
+			hx-target={ fmt.Sprintf("#url-%s", lu.ID) }
+			hx-swap="outerHTML"
+			class="edit-form"
+		>
+			<div class="url-content">
+				<a href={ templ.SafeURL(lu.URL.URL) } target="_blank" rel="noopener noreferrer" class="url-link">
+					if lu.URL.Title != "" {
+						{ lu.URL.Title }
+					} else {
+						{ lu.URL.URL }
+					}
+					<i class="fa-solid fa-arrow-up-right-from-square fa-xs" aria-hidden="true"></i>
+				</a>
+				<input
+					type="text"
+					id={ fmt.Sprintf("notes-%s", lu.ID) }
+					name="notes"
+					value={ lu.Notes }
+					placeholder="Add notes..."
+					aria-label="Notes"
+				/>
+			</div>
+			<div class="url-actions">
+				<button type="submit" class="btn-icon" title="Save">
+					<i class="fa-solid fa-check" aria-hidden="true"></i>
+					<span class="visually-hidden">Save</span>
+				</button>
+				<button
+					type="button"
+					class="btn-icon"
+					title="Cancel"
+					hx-get={ fmt.Sprintf("/my/stash/urls/%s", lu.ID) }
+					hx-target={ fmt.Sprintf("#url-%s", lu.ID) }
+					hx-swap="outerHTML"
+				>
+					<i class="fa-solid fa-xmark" aria-hidden="true"></i>
+					<span class="visually-hidden">Cancel</span>
+				</button>
+			</div>
+		</form>
+	</li>
+}
+
+// NewListPage renders the page to create a new list
+templ NewListPage() {
+	@Layout(PageTitle("New List")) {
+		<h2>Create New List</h2>
+		<form method="POST" action="/my/stash/lists" class="card">
+			<div class="form-group">
+				<label for="name">List Name</label>
+				<input
+					type="text"
+					id="name"
+					name="name"
+					placeholder="My Reading List"
+					required
+					autofocus
+				/>
+			</div>
+			<div class="form-group">
+				<label for="description">Description <span class="hint">(optional)</span></label>
+				<input
+					type="text"
+					id="description"
+					name="description"
+					placeholder="Articles to read later"
+				/>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					<i class="fa-solid fa-plus" aria-hidden="true"></i> Create List
+				</button>
+				<a href="/my/stash" class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}
+
+// NewURLPage renders the page to add a URL to a list
+templ NewURLPage(list *stash.List, errorMsg string) {
+	@Layout(PageTitle("Add Link")) {
+		<h2>Add Link to { list.Name }</h2>
+
+		if errorMsg != "" {
+			<div role="alert">{ errorMsg }</div>
+		}
+
+		<form method="POST" action={ templ.SafeURL(fmt.Sprintf("/my/stash/lists/%s/urls", list.ID)) } class="card">
+			<div class="form-group">
+				<label for="url">URL</label>
+				<input
+					type="url"
+					id="url"
+					name="url"
+					placeholder="https://example.com/article"
+					required
+					autofocus
+				/>
+			</div>
+			<div class="form-group">
+				<label for="notes">Notes <span class="hint">(optional)</span></label>
+				<input
+					type="text"
+					id="notes"
+					name="notes"
+					placeholder="Why I'm saving this..."
+				/>
+			</div>
+			<div class="form-actions">
+				<button type="submit" class="btn btn-primary">
+					<i class="fa-solid fa-plus" aria-hidden="true"></i> Save Link
+				</button>
+				<a href={ templ.SafeURL(fmt.Sprintf("/my/stash?list=%s", list.ID)) } class="btn">Cancel</a>
+			</div>
+		</form>
+	}
+}

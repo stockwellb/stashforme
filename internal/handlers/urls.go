@@ -6,12 +6,17 @@ import (
 
 // Common route paths
 const (
-	PathLogin      = "/login"
-	PathVerify     = "/verify"
-	PathMyStash    = "/my/stash"
-	PathMyAccount  = "/my/account"
-	PathMe         = "/me"
+	PathLogin        = "/login"
+	PathVerify       = "/verify"
+	PathMyStash      = "/my/stash"
+	PathMyAccount    = "/my/account"
+	PathMe           = "/me"
 	PathPasskeySetup = "/passkey/setup"
+
+	// Stash routes
+	PathStashLists    = "/my/stash/lists"
+	PathStashListURLs = "/my/stash/lists/:id/urls"
+	PathStashURLs     = "/my/stash/urls"
 )
 
 // BuildURL constructs a URL with query parameters

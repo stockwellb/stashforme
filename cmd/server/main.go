@@ -14,6 +14,7 @@ import (
 	"stashforme/internal/handlers"
 	mw "stashforme/internal/middleware"
 	"stashforme/internal/sms"
+	"stashforme/internal/stash"
 )
 
 func main() {
@@ -54,6 +55,9 @@ func main() {
 	// Initialize stores
 	userStore := auth.NewUserStore(db)
 	sessionStore := auth.NewSessionStore(db)
+	listStore := stash.NewListStore(db)
+	urlStore := stash.NewURLStore(db)
+	listURLStore := stash.NewListURLStore(db)
 
 	// Initialize services
 	otpService := auth.NewOTPService(db, smsProvider)
@@ -62,7 +66,7 @@ func main() {
 	passkeyConfig := auth.PasskeyConfig{
 		RPID:          getEnv("WEBAUTHN_RP_ID", "localhost"),
 		RPOrigin:      getEnv("WEBAUTHN_RP_ORIGIN", "http://localhost:8080"),
-		RPDisplayName: getEnv("WEBAUTHN_RP_NAME", "StashForMe"),
+		RPDisplayName: getEnv("WEBAUTHN_RP_NAME", "stashfor.me"),
 	}
 	passkeyService, err := auth.NewPasskeyService(db, userStore, passkeyConfig)
 	if err != nil {
@@ -99,6 +103,7 @@ func main() {
 	h := handlers.New()
 	authHandler := handlers.NewAuthHandler(otpService, sessionStore, userStore, passkeyService)
 	accountHandler := handlers.NewAccountHandler(userStore, passkeyService)
+	stashHandler := handlers.NewStashHandler(listStore, urlStore, listURLStore)
 
 	// Public routes
 	e.GET("/", h.Home)
@@ -109,10 +114,23 @@ func main() {
 	e.GET("/my", func(c echo.Context) error {
 		return c.Redirect(http.StatusMovedPermanently, "/me")
 	})
-	e.GET("/my/stash", h.Stash)
 	e.GET("/my/account", accountHandler.Account)
 	e.POST("/my/account/passkeys/register", accountHandler.RegisterPasskey)
 	e.DELETE("/my/account/passkeys/:id", accountHandler.DeletePasskey)
+
+	// Stash routes
+	e.GET("/my/stash", stashHandler.Stash)
+	e.GET("/my/stash/new", stashHandler.NewListPage)
+	e.GET("/my/stash/lists/:id", stashHandler.ListDetail)
+	e.POST("/my/stash/lists", stashHandler.CreateList)
+	e.PUT("/my/stash/lists/:id", stashHandler.UpdateList)
+	e.DELETE("/my/stash/lists/:id", stashHandler.DeleteList)
+	e.GET("/my/stash/:id/new", stashHandler.NewURLPage)
+	e.POST("/my/stash/lists/:id/urls", stashHandler.AddURL)
+	e.GET("/my/stash/urls/:id", stashHandler.URLItem)
+	e.GET("/my/stash/urls/:id/edit", stashHandler.EditURLNotesForm)
+	e.PUT("/my/stash/urls/:id", stashHandler.UpdateURLNotes)
+	e.DELETE("/my/stash/urls/:id", stashHandler.RemoveURL)
 
 	// Auth routes
 	e.GET("/login", authHandler.Login)

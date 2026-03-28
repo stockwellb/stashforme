@@ -1,14 +1,30 @@
 package views
 
-templ Stash() {
-	@Layout("My Stash - StashForMe") {
-		<h2>My Stash</h2>
-		<p>Your saved links will appear here.</p>
+import "stashforme/internal/stash"
 
-		<nav aria-label="Main navigation">
-			<ul>
-				<li><a href="/me">My Profile</a></li>
-			</ul>
-		</nav>
+templ Stash(lists []*stash.List, selectedList *stash.List, listURLs []*stash.ListURL) {
+	@Layout(PageTitle("My Stash")) {
+		<h2>My Stash</h2>
+
+		<div id="stash-container">
+			<nav id="lists-nav" class="card" aria-label="Lists">
+				<div class="nav-header">
+					<h3 class="visually-hidden">Your Lists</h3>
+					<a href="/my/stash/new" class="btn-icon" title="Create new list">
+						<i class="fa-solid fa-plus" aria-hidden="true"></i>
+						<span class="visually-hidden">New List</span>
+					</a>
+				</div>
+				<ul>
+					for _, list := range lists {
+						@ListNavItem(list, list.ID == selectedList.ID)
+					}
+				</ul>
+			</nav>
+
+			<section id="list-content" class="card" aria-labelledby="list-heading">
+				@ListContent(selectedList, listURLs)
+			</section>
+		</div>
 	}
 }

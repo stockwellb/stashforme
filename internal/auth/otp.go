@@ -96,7 +96,7 @@ func (s *OTPService) SendCode(ctx context.Context, phone string) error {
 	}
 
 	// Send SMS
-	message := fmt.Sprintf("Your StashForMe verification code is: %s", code)
+	message := fmt.Sprintf("Your stashfor.me code is: %s", code)
 	if err := s.sms.Send(ctx, phone, message); err != nil {
 		return fmt.Errorf("failed to send SMS: %w", err)
 	}

@@ -1,4 +1,4 @@
-# StashForMe - Architecture Documentation
+# stashfor.me - Architecture Documentation
 
 A link sharing site that allows users to save links, organize them into lists, and share them via SMS.
 
