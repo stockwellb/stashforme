@@ -28,6 +28,7 @@ stashforme/
 │   ├── handlers/            # HTTP request handlers
 │   │   ├── auth.go          # Auth endpoints
 │   │   ├── account.go       # Account endpoints
+│   │   ├── stash.go         # Stash/list/URL management endpoints
 │   │   ├── response.go      # HATEOAS response helpers
 │   │   ├── cookies.go       # Cookie management helpers
 │   │   ├── context.go       # Context helpers (RequireUser)
@@ -36,6 +37,14 @@ stashforme/
 │   ├── middleware/auth.go   # Session validation middleware
 │   ├── sms/                 # SMS provider abstraction
 │   └── views/               # Templ templates
+│       ├── layout.templ     # Main layout with header/nav/footer
+│       ├── home.templ       # Landing page
+│       ├── login.templ      # Login form
+│       ├── verify.templ     # OTP verification
+│       ├── passkey_setup.templ  # Passkey registration
+│       ├── account.templ    # Account settings
+│       ├── stash.templ      # Main stash page
+│       ├── stash_partials.templ # List/URL components
 │       └── partials.templ   # Shared components (ProfileCard)
 ├── static/                  # CSS, JavaScript (app.js, style.css)
 └── Makefile                # Build commands
@@ -54,6 +63,9 @@ Services manage data access:
 - `UserStore` - user CRUD
 - `SessionStore` - session management
 - `PasskeyService` - WebAuthn credentials
+- `ListStore` - list CRUD operations
+- `URLStore` - URL metadata and deduplication
+- `ListURLStore` - list-URL relationships
 
 ### HATEOAS API Responses
 JSON responses include `_links` for navigation:
@@ -83,7 +95,7 @@ Core tables:
 - `sessions` - token_hash, user_id, expires_at, last_active_at
 - `verification_codes` - OTP codes with expiry & attempt tracking
 - `passkeys` - WebAuthn credentials per user
-- `lists`, `urls`, `list_urls` - Link organization (infrastructure ready)
+- `lists`, `urls`, `list_urls` - Link organization with full CRUD support
 
 ## Naming Conventions
 
@@ -113,6 +125,17 @@ Core tables:
 **Protected (require auth):**
 - `GET /my` - Redirects to `/my/stash`
 - `GET /my/stash` - Link stash
+- `GET /my/stash/new` - New list form
+- `GET /my/stash/lists/:id` - List detail view
+- `POST /my/stash/lists` - Create list
+- `PUT /my/stash/lists/:id` - Update list
+- `DELETE /my/stash/lists/:id` - Delete list
+- `GET /my/stash/:id/new` - New URL form
+- `POST /my/stash/lists/:id/urls` - Add URL to list
+- `GET /my/stash/urls/:id` - URL item view
+- `GET /my/stash/urls/:id/edit` - Edit URL notes form
+- `PUT /my/stash/urls/:id` - Update URL notes
+- `DELETE /my/stash/urls/:id` - Remove URL from list
 - `GET /my/account` - Account settings
 - `POST /my/account/passkeys/register` - Add new passkey
 - `DELETE /my/account/passkeys/:id` - Remove passkey (supports `_method` override)

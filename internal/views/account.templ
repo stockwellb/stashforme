@@ -16,33 +16,37 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 
 			if len(passkeys) > 0 {
 				for _, p := range passkeys {
-					<dl>
-						<dt>Device</dt>
-						<dd>
-							if p.DeviceName != "" {
-								{ p.DeviceName }
-							} else {
-								Passkey
-							}
-						</dd>
-						<dt>Created</dt>
-						<dd><time datetime={ p.CreatedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.CreatedAt.UTC().Format("Jan 2, 2006") }</time></dd>
-						<dt>Last used</dt>
-						<dd>
-							if p.LastUsedAt != nil {
-								<time datetime={ p.LastUsedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.LastUsedAt.UTC().Format("Jan 2, 2006") }</time>
-							} else {
-								Never
-							}
-						</dd>
-						<dt>Actions</dt>
-						<dd>
-							<form method="POST" action={ templ.SafeURL("/my/account/passkeys/" + p.ID) }>
-								<input type="hidden" name="_method" value="DELETE"/>
-								<button type="submit" aria-label="Delete this passkey">Delete</button>
-							</form>
-						</dd>
-					</dl>
+					<section class="passkey-item">
+						<dl>
+							<dt>Device</dt>
+							<dd>
+								if p.DeviceName != "" {
+									{ p.DeviceName }
+								} else {
+									Passkey
+								}
+							</dd>
+							<dt>Created</dt>
+							<dd><time datetime={ p.CreatedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.CreatedAt.UTC().Format("Jan 2, 2006") }</time></dd>
+							<dt>Last used</dt>
+							<dd>
+								if p.LastUsedAt != nil {
+									<time datetime={ p.LastUsedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.LastUsedAt.UTC().Format("Jan 2, 2006") }</time>
+								} else {
+									Never
+								}
+							</dd>
+							<dt>Actions</dt>
+							<dd>
+								<form method="POST" action={ templ.SafeURL("/my/account/passkeys/" + p.ID) }>
+									<input type="hidden" name="_method" value="DELETE"/>
+									<button type="submit" class="btn-icon btn-icon-danger" aria-label="Delete this passkey">
+										<i class="fa-solid fa-trash" aria-hidden="true"></i>
+									</button>
+								</form>
+							</dd>
+						</dl>
+					</section>
 				}
 			} else {
 				<p><em>No passkeys registered.</em></p>
