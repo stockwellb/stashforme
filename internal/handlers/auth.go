@@ -38,6 +38,13 @@ func NewAuthHandler(
 
 // Login renders the login page
 func (h *AuthHandler) Login(c echo.Context) error {
+	// Redirect to stash if already logged in
+	if cookie, err := c.Cookie(auth.SessionCookieName); err == nil {
+		if _, err := h.sessions.Validate(c.Request().Context(), cookie.Value); err == nil {
+			return c.Redirect(http.StatusSeeOther, PathMyStash)
+		}
+	}
+
 	errorMsg := c.QueryParam("error")
 	return Render(c, http.StatusOK, views.Login(errorMsg))
 }
