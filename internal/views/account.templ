@@ -26,11 +26,11 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 							}
 						</dd>
 						<dt>Created</dt>
-						<dd>{ p.CreatedAt.Format("Jan 2, 2006") }</dd>
+						<dd><time datetime={ p.CreatedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.CreatedAt.UTC().Format("Jan 2, 2006") }</time></dd>
 						<dt>Last used</dt>
 						<dd>
 							if p.LastUsedAt != nil {
-								{ p.LastUsedAt.Format("Jan 2, 2006") }
+								<time datetime={ p.LastUsedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ p.LastUsedAt.UTC().Format("Jan 2, 2006") }</time>
 							} else {
 								Never
 							}

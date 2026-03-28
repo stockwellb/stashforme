@@ -1,3 +1,21 @@
+// Convert <time> elements to local timezone
+function formatLocalTimes() {
+	document.querySelectorAll('time[datetime]').forEach(el => {
+		const date = new Date(el.getAttribute('datetime'));
+		if (isNaN(date)) return;
+
+		// Format as localized date string
+		el.textContent = date.toLocaleDateString(undefined, {
+			year: 'numeric',
+			month: 'long',
+			day: 'numeric'
+		});
+	});
+}
+
+document.addEventListener('DOMContentLoaded', formatLocalTimes);
+document.body.addEventListener('htmx:afterSwap', formatLocalTimes);
+
 // Event delegation - handle all clicks via data-action attributes
 document.addEventListener('click', function(e) {
 	const action = e.target.closest('[data-action]')?.dataset.action;

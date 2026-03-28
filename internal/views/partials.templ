@@ -15,7 +15,7 @@ templ ProfileCard(user *auth.User) {
 			}
 
 			<dt>Member since</dt>
-			<dd>{ user.CreatedAt.Format("January 2, 2006") }</dd>
+			<dd><time datetime={ user.CreatedAt.UTC().Format("2006-01-02T15:04:05Z") }>{ user.CreatedAt.UTC().Format("January 2, 2006") }</time></dd>
 		</dl>
 	</section>
 }

@@ -72,7 +72,7 @@ func (s *SessionStore) Create(ctx context.Context, userID, userAgent, ipAddress 
 	}
 
 	tokenHash := HashToken(token)
-	expiresAt := time.Now().Add(SessionExpiry)
+	expiresAt := time.Now().UTC().Add(SessionExpiry)
 
 	_, err = s.db.ExecContext(ctx, `
 		INSERT INTO sessions (user_id, token_hash, user_agent, ip_address, expires_at)
@@ -103,7 +103,7 @@ func (s *SessionStore) Validate(ctx context.Context, token string) (string, erro
 		return "", fmt.Errorf("failed to validate session: %w", err)
 	}
 
-	if time.Now().After(expiresAt) {
+	if time.Now().UTC().After(expiresAt) {
 		return "", ErrSessionExpired
 	}
 

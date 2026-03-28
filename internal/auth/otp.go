@@ -71,7 +71,7 @@ func (s *OTPService) SendCode(ctx context.Context, phone string) error {
 	err := s.db.QueryRowContext(ctx, `
 		SELECT COUNT(*) FROM verification_codes
 		WHERE phone_number = $1 AND created_at > $2
-	`, phone, time.Now().Add(-RateLimitWindow)).Scan(&count)
+	`, phone, time.Now().UTC().Add(-RateLimitWindow)).Scan(&count)
 	if err != nil {
 		return fmt.Errorf("failed to check rate limit: %w", err)
 	}
@@ -86,7 +86,7 @@ func (s *OTPService) SendCode(ctx context.Context, phone string) error {
 	}
 
 	// Store in database
-	expiresAt := time.Now().Add(OTPExpiry)
+	expiresAt := time.Now().UTC().Add(OTPExpiry)
 	_, err = s.db.ExecContext(ctx, `
 		INSERT INTO verification_codes (phone_number, code, expires_at)
 		VALUES ($1, $2, $3)
@@ -129,7 +129,7 @@ func (s *OTPService) VerifyCode(ctx context.Context, phone, code string) error {
 	}
 
 	// Check expiry
-	if time.Now().After(expiresAt) {
+	if time.Now().UTC().After(expiresAt) {
 		return ErrOTPExpired
 	}
 
