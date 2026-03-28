@@ -277,6 +277,8 @@ label {
 
 .btn-primary:hover {
 	background: #F97316;
+	border-color: #F97316;
+	color: #fff;
 }
 
 .btn-danger {
