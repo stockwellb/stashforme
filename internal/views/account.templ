@@ -8,7 +8,7 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 	@Layout("Account Settings - StashForMe") {
 		<h2>Account Settings</h2>
 
-		<section aria-labelledby="profile-heading">
+		<section class="card" aria-labelledby="profile-heading">
 			<h3 id="profile-heading">Profile</h3>
 			<dl>
 				<dt>Phone</dt>
@@ -16,48 +16,39 @@ templ Account(user *auth.User, passkeys []auth.Passkey, registerData *auth.Passk
 			</dl>
 		</section>
 
-		<section aria-labelledby="passkeys-heading">
+		<section class="card" aria-labelledby="passkeys-heading">
 			<h3 id="passkeys-heading">Passkeys</h3>
 			<p>Passkeys let you sign in securely using Face ID, Touch ID, or your device PIN.</p>
 
 			if len(passkeys) > 0 {
-				<table>
-					<caption class="visually-hidden">Your registered passkeys</caption>
-					<thead>
-						<tr>
-							<th scope="col">Device</th>
-							<th scope="col">Created</th>
-							<th scope="col">Last Used</th>
-							<th scope="col"><span class="visually-hidden">Actions</span></th>
-						</tr>
-					</thead>
-					<tbody>
-						for _, p := range passkeys {
-							<tr>
-								<td>
-									if p.DeviceName != "" {
-										{ p.DeviceName }
-									} else {
-										Passkey
-									}
-								</td>
-								<td>{ p.CreatedAt.Format("Jan 2, 2006") }</td>
-								<td>
-									if p.LastUsedAt != nil {
-										{ p.LastUsedAt.Format("Jan 2, 2006") }
-									} else {
-										Never
-									}
-								</td>
-								<td>
-									<form method="POST" action={ templ.SafeURL("/my/account/passkeys/" + p.ID) }>
-										<button type="submit" aria-label="Delete this passkey">Delete</button>
-									</form>
-								</td>
-							</tr>
-						}
-					</tbody>
-				</table>
+				for _, p := range passkeys {
+					<dl>
+						<dt>Device</dt>
+						<dd>
+							if p.DeviceName != "" {
+								{ p.DeviceName }
+							} else {
+								Passkey
+							}
+						</dd>
+						<dt>Created</dt>
+						<dd>{ p.CreatedAt.Format("Jan 2, 2006") }</dd>
+						<dt>Last used</dt>
+						<dd>
+							if p.LastUsedAt != nil {
+								{ p.LastUsedAt.Format("Jan 2, 2006") }
+							} else {
+								Never
+							}
+						</dd>
+						<dt>Actions</dt>
+						<dd>
+							<form method="POST" action={ templ.SafeURL("/my/account/passkeys/" + p.ID) }>
+								<button type="submit" aria-label="Delete this passkey">Delete</button>
+							</form>
+						</dd>
+					</dl>
+				}
 			} else {
 				<p><em>No passkeys registered.</em></p>
 			}

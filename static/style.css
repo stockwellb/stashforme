@@ -19,12 +19,17 @@ body {
 	border: 0;
 }
 
+/* Sections */
+section {
+	margin: 0.5rem 0;
+}
+
 /* Card component */
 .card {
 	padding: 1.5rem;
 	border: 1px solid #ddd;
-	border-radius: 8px;
-	max-width: 400px;
+	border-radius: 0.5rem;
+	max-width: 25rem;
 }
 
 /* Form elements */
@@ -35,7 +40,7 @@ input, button {
 
 input {
 	width: 100%;
-	max-width: 300px;
+	max-width: 18.75rem;
 	box-sizing: border-box;
 }
 
@@ -58,7 +63,7 @@ a {
 [role="alert"] {
 	padding: 0.75rem 1rem;
 	margin-bottom: 1rem;
-	border-left: 4px solid #c00;
+	border-left: 0.25rem solid #c00;
 	background: #fee;
 }
 
@@ -69,20 +74,36 @@ a {
 	margin-top: 0.25rem;
 }
 
-/* Tables */
-table {
-	border-collapse: collapse;
-	width: 100%;
+/* Definition lists */
+dl {
+	margin: 0;
 }
 
-th, td {
-	padding: 0.5rem;
-	text-align: left;
-	border-bottom: 1px solid #ddd;
-}
-
-th {
+dt {
 	font-weight: 600;
+	color: #666;
+	font-size: 0.875rem;
+}
+
+dd {
+	margin: 0 0 1rem 0;
+}
+
+dd:last-child {
+	margin-bottom: 0;
+}
+
+/* Side by side on desktop */
+@media (min-width: 37.5rem) {
+	dl {
+		display: grid;
+		grid-template-columns: auto 1fr;
+		gap: 0.25rem 1rem;
+	}
+
+	dd {
+		margin: 0;
+	}
 }
 
 /* Navigation */
