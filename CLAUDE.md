@@ -22,17 +22,22 @@ stashforme/
 │   │   ├── session.go       # Session management
 │   │   ├── otp.go           # OTP verification service
 │   │   ├── passkey.go       # WebAuthn/passkey service
+│   │   ├── webauthn_data.go # PasskeyRegisterData helper
 │   │   └── validate.go      # Phone number validation
 │   ├── database/            # Database connection & migrations
 │   ├── handlers/            # HTTP request handlers
 │   │   ├── auth.go          # Auth endpoints
 │   │   ├── account.go       # Account endpoints
 │   │   ├── response.go      # HATEOAS response helpers
+│   │   ├── cookies.go       # Cookie management helpers
+│   │   ├── context.go       # Context helpers (RequireUser)
+│   │   ├── urls.go          # URL/path constants
 │   │   └── handlers.go      # Handler base & Render helper
 │   ├── middleware/auth.go   # Session validation middleware
 │   ├── sms/                 # SMS provider abstraction
 │   └── views/               # Templ templates
-├── static/                  # CSS, JavaScript
+│       └── partials.templ   # Shared components (ProfileCard)
+├── static/                  # CSS, JavaScript (app.js, style.css)
 └── Makefile                # Build commands
 ```
 
@@ -95,16 +100,23 @@ Core tables:
 **Public:**
 - `GET /` - Landing (redirects to `/my/stash` if logged in)
 - `GET /login` - Login form
+- `GET /verify` - OTP verification page
+- `GET /passkey/setup` - Passkey registration page
 - `POST /auth/send-code` - Initiate OTP
 - `POST /auth/verify-code` - Verify OTP
+- `POST /auth/passkey/register` - Complete passkey registration
 - `POST /auth/passkey/login` - Start passkey auth
 - `POST /auth/passkey/login/finish` - Complete passkey auth
+- `POST /auth/skip-passkey` - Skip passkey setup
+- `GET /api/ping` - Health check
 
 **Protected (require auth):**
 - `GET /me` - User profile
+- `GET /my` - Redirects to `/me`
 - `GET /my/stash` - Link stash
 - `GET /my/account` - Account settings
-- `DELETE /my/account/passkeys/:id` - Remove passkey
+- `POST /my/account/passkeys/register` - Add new passkey
+- `DELETE /my/account/passkeys/:id` - Remove passkey (supports `_method` override)
 - `POST /auth/logout` - Logout
 
 ## Development Commands
@@ -135,13 +147,17 @@ PORT                  # Server port (default 8080)
 
 - **Separation of Concerns**: auth/ has no HTTP knowledge, handlers/ delegates business logic
 - **Interface-Based**: SMS provider is swappable (mock for dev, Twilio for prod)
-- **Semantic HTML**: Proper elements (`<dl>`, `<section>`), ARIA attributes
-- **Security**: HttpOnly cookies, SameSite, rate limiting, OTP expiry
+- **Semantic HTML**: Proper elements (`<dl>`, `<section>`), ARIA attributes, skip-to-main link
+- **Accessibility**: `aria-invalid`/`aria-errormessage` on form errors, `aria-live` for alerts
+- **Security**: HttpOnly cookies, SameSite, rate limiting, OTP expiry, method override for DELETE
 
 ## Gotchas
 
 - Phone numbers must be E.164 format (+14155551234)
 - Templ files generate `*_templ.go` files - don't edit generated files
 - WebAuthn cookies use SameSite=Strict (stricter than session cookies)
+- WebAuthn User.ID can be `[]byte` or `protocol.URLEncodedBase64` - use type switch
 - OTP codes limited to 10/hour per phone number
 - Session tokens stored as SHA256 hashes, not plaintext
+- DELETE forms use `_method=DELETE` hidden field with MethodOverride middleware
+- WebAuthn options must return raw JSON (not HATEOAS wrapped) for JS WebAuthn API
