@@ -72,8 +72,9 @@ async function registerPasskey() {
 		});
 
 		const result = await response.json();
-		if (response.ok && result.redirect) {
-			window.location.href = result.redirect;
+		const redirect = result._links?.redirect?.href;
+		if (response.ok && redirect) {
+			window.location.href = redirect;
 		} else {
 			alert(result.error || 'Failed to register passkey');
 		}
@@ -108,8 +109,9 @@ async function registerPasskeyAccount() {
 		});
 
 		const result = await response.json();
-		if (response.ok && result.redirect) {
-			window.location.href = result.redirect;
+		const redirect = result._links?.redirect?.href;
+		if (response.ok && redirect) {
+			window.location.href = redirect;
 		} else {
 			alert(result.error || 'Failed to register passkey');
 		}
@@ -171,8 +173,9 @@ async function startPasskeyLogin() {
 		});
 
 		const result = await response.json();
-		if (response.ok && result.redirect) {
-			window.location.href = result.redirect;
+		const redirect = result._links?.redirect?.href;
+		if (response.ok && redirect) {
+			window.location.href = redirect;
 		} else {
 			alert(result.error || 'Login failed');
 		}
